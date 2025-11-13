@@ -1,0 +1,143 @@
+"use client"
+import { useAuth } from "@/hooks/use-auth"
+import { getMyInfo } from "@/lib/api/user"
+import { MOCK_USER } from "@/lib/mocks"
+import { useEffect, useState } from "react"
+import { UserProfile } from "@/lib/types/user"
+import { Card } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Avatar } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import MyClothes from "@/components/my/my-clothes"
+import MyCloset from "@/components/my/my-closet"
+import MyProfile from "@/components/my/my-profile"
+import { Mail, MapPin, Phone, User } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+export default function MyPage() {
+  const { isAuthenticated, user, token } = useAuth()
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+
+  useEffect(() => {
+    async function fetchProfile() {
+      if (token) {
+        const data = await getMyInfo(token)
+        if ("data" in data) {
+          setProfile(data.data as UserProfile)
+        } else {
+          setProfile(MOCK_USER)
+        }
+      } else {
+        setProfile(MOCK_USER)
+      }
+    }
+    fetchProfile()
+  }, [token])
+
+  if (!profile) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
+      {/* 헤더 배경 */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-sky-400 via-sky-300 to-cyan-300 opacity-10"></div>
+
+      <div className="container mx-auto px-4 py-12 relative z-10">
+        {/* 프로필 헤더 카드 */}
+        <Card className="mb-12 overflow-hidden shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          {/* 프로필 배경 */}
+          <div className="h-32 bg-gradient-to-r from-sky-300 via-sky-200 to-cyan-200"></div>
+
+          {/* 프로필 정보 */}
+          <div className="px-8 pb-8 -mt-16 relative">
+            <div className="flex flex-col md:flex-row md:items-end gap-6">
+              {/* 아바타 */}
+              <div className="relative">
+                <Avatar className="h-32 w-32 border-4 border-white shadow-lg bg-gradient-to-br from-sky-100 to-cyan-100">
+                  <img
+                    src={profile.imageUrl ?? "https://ui-avatars.com/api/?name=" + encodeURIComponent(profile.nickname) + "&background=random&color=fff"}
+                    alt={profile.nickname}
+                    className="object-cover"
+                  />
+                </Avatar>
+              </div>
+
+              {/* 기본 정보 */}
+              <div className="flex-1 pb-2">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.nickname}</h1>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-sky-500" />
+                    <span>{profile.username}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-sky-500" />
+                    <span>{profile.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-sky-500" />
+                    <span>{profile.phoneNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 위치 정보 */}
+            <div className="mt-6 pt-6 border-t border-sky-100">
+              <div className="flex items-start gap-2 text-gray-700">
+                <MapPin className="h-5 w-5 text-sky-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm text-gray-600">거래 희망 지역</p>
+                  <p className="text-gray-900">{profile.tradeAddress}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* 탭 컨텐츠 */}
+        <Tabs defaultValue="profile" className="space-y-6">
+          {/* 탭 리스트 - 고급스럽게 스타일링 */}
+          <div className="border-b border-sky-100 bg-white/50 backdrop-blur-sm rounded-lg p-2">
+            <TabsList className="bg-transparent border-none p-0 gap-2">
+              <TabsTrigger 
+                value="profile"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-cyan-400 data-[state=active]:text-white text-gray-700 font-semibold rounded-lg px-6 py-2 transition-all"
+              >
+                👤 프로필
+              </TabsTrigger>
+              <TabsTrigger 
+                value="clothes"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-cyan-400 data-[state=active]:text-white text-gray-700 font-semibold rounded-lg px-6 py-2 transition-all"
+              >
+                👕 내 옷
+              </TabsTrigger>
+              <TabsTrigger 
+                value="closet"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-cyan-400 data-[state=active]:text-white text-gray-700 font-semibold rounded-lg px-6 py-2 transition-all"
+              >
+                🗄️ 내 옷장
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* 탭 컨텐츠 - 각 섹션에 카드 스타일 적용 */}
+          <div className="animate-in fade-in">
+            <TabsContent value="profile" className="space-y-6">
+              <MyProfile profile={profile} />
+            </TabsContent>
+
+            <TabsContent value="clothes" className="space-y-6">
+              <MyClothes />
+            </TabsContent>
+
+            <TabsContent value="closet" className="space-y-6">
+              <MyCloset />
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+    </div>
+  )
+}

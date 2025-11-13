@@ -1,0 +1,48 @@
+@tailwind base;@tailwind base;
+
+@tailwind components;@tailwind components;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "tw-animate-css";
+
+/* Global CSS variables and minimal Tailwind layers.
+   This file replaces a corrupted version. Keep it simple to avoid PostCSS parser issues.
+*/
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.145 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --radius: 0.625rem;
+  --oot-sky-100: #eef8ff;
+  --oot-sky-200: #dff4ff;
+  --oot-accent: #9ad7f5;
+  /* font-family as a single string value inside the variable to avoid parser splitting */
+  --font-sans: "Spoqa Han Sans Neo, Pretendard Variable, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  --font-mono: "JetBrains Mono, Fira Code, ui-monospace, SFMono-Regular, Menlo, monospace";
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+}
+
+@layer base {
+  html, body {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@layer components {
+  .oot-accent-bg {
+    background: linear-gradient(90deg, var(--oot-sky-100), var(--oot-sky-200));
+  }
+  .oot-accent-text {
+    color: var(--oot-accent);
+  }
+}

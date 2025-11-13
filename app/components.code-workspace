@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"name": "components",
+			"path": "../components"
+		},
+		{
+			"name": "src",
+			"path": "../../../Desktop/파이널/oot-frontend/src"
+		},
+		{
+			"name": "app",
+			"path": "."
+		},
+		{
+			"name": "hooks",
+			"path": "../hooks"
+		},
+		{
+			"name": "lib",
+			"path": "../lib"
+		},
+		{
+			"name": "public",
+			"path": "../public"
+		},
+		{
+			"name": "styles",
+			"path": "../styles"
+		}
+	],
+	"settings": {}
+}

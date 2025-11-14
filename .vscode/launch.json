@@ -2,7 +2,14 @@
   // VS Code 디버깅 설정
   "version": "0.2.0",
   "configurations": [
-    
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run next",
+      "runtimeExecutable": "next",
+      "cwd": "${workspaceFolder}",
+      "args": []
+    },
     {
       // ✅ Next.js 서버 디버깅
       "type": "node",
@@ -16,7 +23,9 @@
       ],
       "port": 9229,
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       // ✅ 단일 파일 디버깅 (예: utils/test.ts)
@@ -24,9 +33,13 @@
       "request": "launch",
       "name": "Run Current File",
       "program": "${file}",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ],
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       // ✅ Chrome 브라우저 디버깅 (React 컴포넌트)

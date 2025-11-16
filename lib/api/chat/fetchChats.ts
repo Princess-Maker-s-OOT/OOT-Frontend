@@ -7,7 +7,7 @@ export async function fetchChats(chatroomId: string, token: string): Promise<Api
   hasNext: boolean
   hasPrevious: boolean
 }>> {
-  const res = await fetch(`http://localhost:8080/api/v1/chatrooms/${chatroomId}/chats`, {
+  const res = await fetch(`http://localhost/api/v1/chatrooms/${chatroomId}/chats`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

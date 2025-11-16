@@ -10,7 +10,7 @@ export async function updateSalePostStatus(
   accessToken: string
 ): Promise<UpdateSalePostStatusSuccessResponse | UpdateSalePostStatusErrorResponse> {
   const response = await fetch(
-    `http://localhost:8080/api/v1/sale-posts/${salePostId}/status`,
+    `http://localhost/api/v1/sale-posts/${salePostId}/status`,
     {
       method: "PATCH",
       headers: {
@@ -45,7 +45,7 @@ export async function createSalePostFromRecommendation(
   }
 
   const res = await fetch(
-    `http://localhost:8080/api/v1/recommendations/${recommendationId}/sale-post`,
+    `http://localhost/api/v1/recommendations/${recommendationId}/sale-post`,
     {
       method: "POST",
       headers: {

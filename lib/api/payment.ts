@@ -14,9 +14,9 @@ export async function confirmPayment(
   data: PaymentConfirmRequest,
   accessToken: string
 ): Promise<PaymentConfirmSuccessResponse | PaymentConfirmErrorResponse> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
 
-  const response = await fetch(`${apiUrl}/payments/confirm`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/confirm`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -37,9 +37,9 @@ export async function failPayment(
   data: PaymentFailRequest,
   accessToken: string
 ): Promise<PaymentFailSuccessResponse | PaymentFailErrorResponse> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
 
-  const response = await fetch(`${apiUrl}/payments/${paymentId}/fail`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/${paymentId}/fail`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,9 +59,9 @@ export async function getPaymentById(
   paymentId: number,
   accessToken: string
 ): Promise<any> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
 
-  const response = await fetch(`${apiUrl}/payments/${paymentId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/payments/${paymentId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

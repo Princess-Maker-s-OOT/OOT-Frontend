@@ -31,9 +31,15 @@ export default function ClosetClothesList({ closetId }: Props) {
     const confirmed = window.confirm("이 옷을 옷장에서 제거하시겠습니까?")
     if (!confirmed) return
 
+    const token = localStorage.getItem("accessToken")
+    if (!token) {
+      setError("로그인이 필요합니다.")
+      return
+    }
+
     setLoadingId(clothesId)
     try {
-      const result = await removeClothesFromCloset(closetId, clothesId)
+      const result = await removeClothesFromCloset(closetId, clothesId, token)
       if ((result as any)?.success) {
         setItems((prev) => prev.filter((item) => item.clothesId !== clothesId))
       } else {

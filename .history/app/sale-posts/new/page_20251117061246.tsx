@@ -70,7 +70,7 @@ export default function NewSalePostPage() {
 
     const parsed = CreateSalePostSchema.safeParse({
       ...form,
-      price: String(form.price) === "" ? 0 : Number(form.price),
+      price: form.price === "" || form.price === undefined ? 0 : Number(form.price),
     });
 
     if (!parsed.success) {

@@ -39,7 +39,7 @@ export default function ChatPage() {
       if (result.success) {
         setRooms((prev) => prev.filter((room) => room.chatroomId !== chatroomId))
       } else {
-        alert(result.message || "채팅방 삭제에 실패했습니다")
+        alert(result.error || "채팅방 삭제에 실패했습니다")
       }
     } catch (err) {
       console.error("삭제 실패:", err)

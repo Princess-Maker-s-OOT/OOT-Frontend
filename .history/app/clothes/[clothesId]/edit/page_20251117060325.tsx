@@ -64,7 +64,7 @@ export default function ClothesEditPage() {
       return
     }
 
-    const result = await updateClothes(clothesId, form)
+    const result = await updateClothes(clothesId, form, token)
     if (result.success) {
       router.push(`/clothes/${result.data.id}`)
     } else {

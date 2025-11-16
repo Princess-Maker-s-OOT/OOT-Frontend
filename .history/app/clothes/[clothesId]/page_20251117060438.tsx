@@ -40,8 +40,14 @@ export default function ClothesDetailPage() {
     const confirmed = confirm("정말 삭제하시겠습니까?")
     if (!confirmed || !clothesId) return
 
+    const token = localStorage.getItem("accessToken")
+    if (!token) {
+      alert("로그인이 필요합니다.")
+      return
+    }
+
     setDeleting(true)
-    const result = await deleteClothes(Number(clothesId))
+    const result = await deleteClothes(Number(clothesId), token)
     setDeleting(false)
 
     if (result.success) {

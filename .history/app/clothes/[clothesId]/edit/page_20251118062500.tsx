@@ -7,8 +7,6 @@ import { updateClothes, getClothesById } from "@/lib/api/clothes"
 import { createPresignedUrl, saveImageMetadata } from "@/lib/api/image"
 import Image from "next/image"
 import type { UpdateClothesRequest } from "@/schemas/clothes"
-import { getCategories, buildCategoryTree, type CategoryNode } from "@/lib/api/categories"
-import CategorySelector from "@/components/CategorySelector"
 
 export default function ClothesEditPage() {
   const { id } = useParams()
@@ -22,7 +20,6 @@ export default function ClothesEditPage() {
     description: "",
     images: [],
   })
-  const [categories, setCategories] = useState<CategoryNode[]>([])
 
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -46,13 +43,6 @@ export default function ClothesEditPage() {
         )
       } else {
         setError(res.message)
-      }
-    })
-    // 카테고리 로드
-    getCategories(0, 200).then((result) => {
-      if (result.success && result.data) {
-        const tree = buildCategoryTree(result.data.content)
-        setCategories(tree)
       }
     })
   }, [clothesId])
@@ -144,15 +134,16 @@ export default function ClothesEditPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
+    <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">옷 수정</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 카테고리 선택 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium mb-1">카테고리 *</label>
-          <CategorySelector
-            categories={categories}
-            onSelect={(categoryId) => setForm((prev) => ({ ...prev, categoryId }))}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">카테고리 ID</label>
+          <input
+            type="number"
+            value={form.categoryId}
+            onChange={(e) => handleChange("categoryId", Number(e.target.value))}
+            className="w-full border rounded px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -162,7 +153,7 @@ export default function ClothesEditPage() {
             onChange={(e) => handleChange("clothesSize", e.target.value)}
             className="w-full border rounded px-3 py-2 text-sm"
           >
-            {...["XS", "S", "M", "L", "XL", "XXL", "FREE"].map((size) => (
+            {["XS", "S", "M", "L", "XL", "XXL", "FREE"].map((size) => (
               <option key={size} value={size}>{size}</option>
             ))}
           </select>
@@ -174,7 +165,7 @@ export default function ClothesEditPage() {
             onChange={(e) => handleChange("clothesColor", e.target.value)}
             className="w-full border rounded px-3 py-2 text-sm"
           >
-            {...["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "GRAY", "PINK", "NAVY", "BROWN", "BEIGE"].map((color) => (
+            {["BLACK", "WHITE", "RED", "BLUE", "GREEN", "YELLOW", "GRAY", "PINK", "NAVY", "BROWN", "BEIGE"].map((color) => (
               <option key={color} value={color}>{color}</option>
             ))}
           </select>
@@ -189,80 +180,50 @@ export default function ClothesEditPage() {
           />
         </div>
         {/* 이미지 업로드 */}
-        <div className="space-y-2">
-          <label>이미지</label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-sky-400 transition-colors">
-            <input
-              type="file"
-              id="edit-images"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={uploadingImages}
-              className="hidden"
-            />
-            <label
-              htmlFor="edit-images"
-              className="flex flex-col items-center justify-center cursor-pointer py-4"
-            >
-              <Upload className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">
-                {uploadingImages ? "업로드 중..." : "클릭하여 이미지 업로드"}
-              </p>
-              <p className="text-xs text-gray-500">여러 장 선택 가능</p>
-            </label>
+        <div>
+          <label className="block text-sm font-medium mb-1">이미지</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
+            disabled={uploadingImages}
+            className="hidden"
+            id="edit-images"
+          />
+          <label htmlFor="edit-images" className="cursor-pointer inline-block px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 disabled:opacity-50">
+            {uploadingImages ? "업로드 중..." : "이미지 선택"}
+          </label>
+          <p className="text-xs text-gray-500 mt-1">이미지 파일을 선택하면 자동으로 업로드됩니다.</p>
+          {/* 미리보기 */}
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {previewImages.map((img, i) => (
+              <div key={img.id} className="relative aspect-square">
+                <Image src={img.url} alt={`이미지 ${i + 1}`} fill className="object-cover rounded" />
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 bg-sky-500 text-white text-xs px-2 py-1 rounded">메인</span>
+                )}
+                <button type="button" onClick={() => removeImage(img.id)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                  삭제
+                </button>
+              </div>
+            ))}
           </div>
-          {/* 이미지 미리보기 */}
           {previewImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              {previewImages.map((img, index) => (
-                <div key={img.id} className="relative aspect-square">
-                  <Image
-                    src={img.url}
-                    alt="업로드된 이미지"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
-                  {index === 0 && (
-                    <div className="absolute top-1 left-1 bg-sky-500 text-white text-xs px-2 py-1 rounded">
-                      메인
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(img.id)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs text-gray-500 mt-1">* 첫 번째 이미지가 메인 이미지로 설정됩니다.</p>
           )}
-          {previewImages.length > 0 && (
-            <p className="text-xs text-gray-500 mt-2">
-              * 첫 번째 이미지가 메인 이미지로 설정됩니다.
-            </p>
+          {previewImages.length === 0 && (
+            <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>
           )}
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
-        <div className="flex gap-3 pt-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 text-white"
-          >
-            {loading ? "수정 중..." : "수정하기"}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            disabled={loading}
-            className="flex-1 bg-gray-100 text-gray-700"
-          >
-            취소
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 transition"
+        >
+          {loading ? "수정 중..." : "수정하기"}
+        </button>
       </form>
     </div>
   )

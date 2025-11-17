@@ -170,7 +170,7 @@ export default function NewSalePostPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
+    <div className="max-w-xl mx-auto p-6">
       {/* 상단 안내 */}
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold text-sky-600">판매글 등록</h1>
@@ -180,7 +180,7 @@ export default function NewSalePostPage() {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-6 bg-white p-6 rounded shadow">
+      <form onSubmit={onSubmit} className="space-y-4 bg-white p-6 rounded shadow">
         {/* 제목 */}
         <div>
           <label className="block text-sm font-medium mb-1">제목 <span className="text-red-500">*</span></label>
@@ -251,58 +251,38 @@ export default function NewSalePostPage() {
         </div>
 
         {/* 이미지 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium mb-1">이미지 <span className="text-red-500">*</span></label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-sky-400 transition-colors">
-            <input
-              type="file"
-              id="sale-images"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={uploadingImage}
-              className="hidden"
-            />
-            <label
-              htmlFor="sale-images"
-              className="flex flex-col items-center justify-center cursor-pointer py-4"
-            >
-              <Upload className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600 mb-1">
-                {uploadingImage ? "업로드 중..." : "클릭하여 이미지 업로드"}
-              </p>
-              <p className="text-xs text-gray-500">여러 장 선택 가능</p>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            이미지 <span className="text-red-500">*</span>
+          </label>
+          <div className="mb-3">
+            <label className="cursor-pointer inline-block px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 disabled:opacity-50">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="hidden"
+              />
+              {uploadingImage ? "업로드 중..." : "이미지 선택"}
             </label>
+            <p className="text-xs text-gray-500 mt-1">이미지 파일을 선택하면 자동으로 업로드됩니다.</p>
           </div>
-          {/* 이미지 미리보기 */}
+          {/* 업로드된 이미지 목록 */}
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {previewImages.map((img, i) => (
+              <div key={img.id} className="relative aspect-square">
+                <Image src={img.url} alt={`이미지 ${i + 1}`} fill className="object-cover rounded" />
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 bg-sky-500 text-white text-xs px-2 py-1 rounded">메인</span>
+                )}
+                <button type="button" onClick={() => removeImage(img.id)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">삭제</button>
+              </div>
+            ))}
+          </div>
           {previewImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              {previewImages.map((img, index) => (
-                <div key={img.id} className="relative aspect-square">
-                  <Image
-                    src={img.url}
-                    alt="업로드된 이미지"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
-                  {index === 0 && (
-                    <div className="absolute top-1 left-1 bg-sky-500 text-white text-xs px-2 py-1 rounded">
-                      메인
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(img.id)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {previewImages.length > 0 && (
-            <p className="text-xs text-gray-500 mt-2">* 첫 번째 이미지가 썸네일로 사용됩니다.</p>
+            <p className="text-xs text-gray-500 mt-1">* 첫 번째 이미지가 썸네일로 사용됩니다.</p>
           )}
           {previewImages.length === 0 && (
             <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>
@@ -314,11 +294,11 @@ export default function NewSalePostPage() {
         {success && <div className="text-sm text-green-600">{success}</div>}
 
         {/* 버튼 */}
-        <div className="flex gap-3 pt-4">
-          <button type="button" className="flex-1 bg-gray-100 text-gray-700">
+        <div className="flex justify-between mt-6">
+          <button type="button" className="bg-gray-300 text-black px-4 py-2 rounded">
             임시 저장
           </button>
-          <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 text-white">
+          <button type="submit" disabled={loading} className="bg-sky-100 text-sky-700 px-4 py-2 rounded disabled:opacity-50">
             {loading ? "작성 중..." : "작성 완료"}
           </button>
         </div>

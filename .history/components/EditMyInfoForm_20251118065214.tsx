@@ -38,14 +38,14 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
   const [formData, setFormData] = useState({
     nickname: profile.nickname,
     phoneNumber: profile.phoneNumber || "",
-    address: profile.address,
-    latitude: profile.latitude,
-    longitude: profile.longitude,
+    tradeAddress: profile.tradeAddress,
+    tradeLatitude: profile.tradeLatitude,
+    tradeLongitude: profile.tradeLongitude,
   })
 
   const [imageData, setImageData] = useState({
-     imageId: profile.imageId ?? null,
-     imageUrl: profile.imageUrl || null,
+    imageId: null as number | null,
+    imageUrl: profile.imageUrl || null,
   })
 
   // 카카오맵 스크립트 로드
@@ -102,56 +102,67 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setUploadingImage(true);
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+
     try {
-      // 프로필은 1장만 허용
-      const file = files[0];
-      const presigned = await createPresignedUrl({
+      // Presigned URL 생성
+      const presignedResult = await createPresignedUrl({
         fileName: file.name,
-        type: "user"
-      });
-      if (!presigned.success || !presigned.data) {
-        throw new Error(presigned.message || "이미지 업로드 URL 생성 실패");
+        type: "user",
+      })
+
+      if (!presignedResult.success || !presignedResult.data) {
+        throw new Error("이미지 업로드 URL 생성 실패")
       }
-      const { presignedUrl, fileUrl, s3Key } = presigned.data;
-      const uploadRes = await fetch(presignedUrl, {
+
+      const data = presignedResult.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
+      // S3에 업로드
+      const uploadResponse = await fetch(data.presignedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
         body: file,
-      });
-      if (!uploadRes.ok) {
-        throw new Error("이미지 업로드 실패");
+        headers: {
+          "Content-Type": file.type,
+        },
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error("S3 업로드 실패")
       }
+
+      // 메타데이터 저장
       const saveResult = await saveImageMetadata({
         fileName: file.name,
-        url: fileUrl,
-        s3Key: s3Key,
+        url: data.fileUrl,
+        s3Key: data.s3Key,
         contentType: file.type,
         type: "USER",
-        size: file.size
-      });
+        size: file.size,
+      })
+
       if (saveResult.success && saveResult.data) {
-        const imageData = saveResult.data;
+        const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
         setImageData({
           imageId: imageData.id,
           imageUrl: imageData.url,
-        });
+        })
         toast({
           title: "업로드 성공",
           description: "이미지가 업로드되었습니다.",
-        });
+        })
       }
-    } catch (err: any) {
+    } catch (error) {
+      console.error("이미지 업로드 에러:", error)
       toast({
         title: "업로드 실패",
-        description: err?.message || "이미지 업로드 중 오류가 발생했습니다.",
+        description: "이미지 업로드 중 오류가 발생했습니다.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setUploadingImage(false);
-      e.target.value = "";
+      setUploadingImage(false)
+      e.target.value = ""
     }
   }
 
@@ -200,9 +211,9 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
             const { address_name, y, x } = result[0]
             setFormData({
               ...formData,
-              address: address_name,
-              latitude: parseFloat(y),
-              longitude: parseFloat(x),
+              tradeAddress: address_name,
+              tradeLatitude: parseFloat(y),
+              tradeLongitude: parseFloat(x),
             })
             toast({
               title: "주소 검색 성공",
@@ -241,7 +252,7 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
       return
     }
 
-    if (!(formData.address ?? "").trim()) {
+    if (!formData.tradeAddress.trim()) {
       toast({
         title: "입력 오류",
         description: "거래 주소를 입력해주세요.",
@@ -258,7 +269,7 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
         imageData.imageId &&
         typeof imageData.imageId === "number" &&
         imageData.imageId > 0 &&
-          imageData.imageId !== profile.imageId
+        String(imageData.imageId) !== String(profile.imageUrl)
       ) {
         const imgResult = await updateProfileImage({ imageId: imageData.imageId })
         console.log("프로필 이미지 수정 응답:", imgResult)
@@ -278,9 +289,9 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
       const reqData = {
         nickname: formData.nickname,
         phoneNumber: phoneValue,
-        address: formData.address,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
+        tradeAddress: formData.tradeAddress,
+        tradeLatitude: formData.tradeLatitude,
+        tradeLongitude: formData.tradeLongitude,
       }
       console.log("회원 정보 수정 요청 데이터:", reqData)
       const result = await updateMyInfo(reqData)
@@ -480,9 +491,9 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
               <div className="flex items-start gap-2">
                 <MapPin className="h-5 w-5 text-sky-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-sky-900">{formData.address}</p>
+                  <p className="text-sm font-medium text-sky-900">{formData.tradeAddress}</p>
                   <p className="text-xs text-sky-700 mt-1">
-                    위도: {formData.latitude?.toFixed(6)}, 경도: {formData.longitude?.toFixed(6)}
+                    위도: {formData.tradeLatitude.toFixed(6)}, 경도: {formData.tradeLongitude.toFixed(6)}
                   </p>
                 </div>
               </div>

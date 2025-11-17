@@ -44,8 +44,8 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
   })
 
   const [imageData, setImageData] = useState({
-     imageId: profile.imageId ?? null,
-     imageUrl: profile.imageUrl || null,
+    imageId: null as number | null,
+    imageUrl: profile.imageUrl || null,
   })
 
   // 카카오맵 스크립트 로드
@@ -102,56 +102,67 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setUploadingImage(true);
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+
     try {
-      // 프로필은 1장만 허용
-      const file = files[0];
-      const presigned = await createPresignedUrl({
+      // Presigned URL 생성
+      const presignedResult = await createPresignedUrl({
         fileName: file.name,
-        type: "user"
-      });
-      if (!presigned.success || !presigned.data) {
-        throw new Error(presigned.message || "이미지 업로드 URL 생성 실패");
+        type: "user",
+      })
+
+      if (!presignedResult.success || !presignedResult.data) {
+        throw new Error("이미지 업로드 URL 생성 실패")
       }
-      const { presignedUrl, fileUrl, s3Key } = presigned.data;
-      const uploadRes = await fetch(presignedUrl, {
+
+      const data = presignedResult.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
+      // S3에 업로드
+      const uploadResponse = await fetch(data.presignedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
         body: file,
-      });
-      if (!uploadRes.ok) {
-        throw new Error("이미지 업로드 실패");
+        headers: {
+          "Content-Type": file.type,
+        },
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error("S3 업로드 실패")
       }
+
+      // 메타데이터 저장
       const saveResult = await saveImageMetadata({
         fileName: file.name,
-        url: fileUrl,
-        s3Key: s3Key,
+        url: data.fileUrl,
+        s3Key: data.s3Key,
         contentType: file.type,
         type: "USER",
-        size: file.size
-      });
+        size: file.size,
+      })
+
       if (saveResult.success && saveResult.data) {
-        const imageData = saveResult.data;
+        const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
         setImageData({
           imageId: imageData.id,
           imageUrl: imageData.url,
-        });
+        })
         toast({
           title: "업로드 성공",
           description: "이미지가 업로드되었습니다.",
-        });
+        })
       }
-    } catch (err: any) {
+    } catch (error) {
+      console.error("이미지 업로드 에러:", error)
       toast({
         title: "업로드 실패",
-        description: err?.message || "이미지 업로드 중 오류가 발생했습니다.",
+        description: "이미지 업로드 중 오류가 발생했습니다.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setUploadingImage(false);
-      e.target.value = "";
+      setUploadingImage(false)
+      e.target.value = ""
     }
   }
 
@@ -258,7 +269,7 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
         imageData.imageId &&
         typeof imageData.imageId === "number" &&
         imageData.imageId > 0 &&
-          imageData.imageId !== profile.imageId
+        String(imageData.imageId) !== String(profile.imageUrl)
       ) {
         const imgResult = await updateProfileImage({ imageId: imageData.imageId })
         console.log("프로필 이미지 수정 응답:", imgResult)

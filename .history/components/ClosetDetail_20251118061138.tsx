@@ -24,8 +24,8 @@ export default function ClosetDetail({ closetId }: Props) {
           const getMyInfo = userRes.getMyInfo
           const userResult = await getMyInfo()
           if (userResult.success && userResult.data) {
-            // ownerId와 userId 비교
-            setIsMine(res.data.ownerId === userResult.data.userId)
+            setIsMine(userResult.data.nickname === res.data.name)
+            // 실제로는 closet.ownerId === userResult.data.userId 등으로 비교해야 함
           }
         } else setError((res as any)?.message ?? "오류가 발생했습니다.")
       })
@@ -45,16 +45,6 @@ export default function ClosetDetail({ closetId }: Props) {
       <div className="text-xs text-gray-500">
         공개 여부: {closet.isPublic ? "공개" : "비공개"}
       </div>
-      {isMine && (
-        <div className="mt-4 flex justify-end">
-          <button
-            className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition font-semibold shadow"
-            onClick={() => window.location.href = "/clothes/new"}
-          >
-            옷 등록
-          </button>
-        </div>
-      )}
       <div className="mt-8">
         {/* 옷장에 등록된 옷 리스트 표시 */}
         <ClosetClothesList closetId={closet.closetId} isMine={isMine} />

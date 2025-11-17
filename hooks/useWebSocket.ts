@@ -6,7 +6,9 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { Client } from "@stomp/stompjs"
 import SockJS from "sockjs-client"
 
-const WS_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace("http", "ws")
+// WebSocket URL - 백엔드 서버에 직접 연결 (Next.js rewrites를 통하지 않음)
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080"
+const WS_URL = WS_BASE_URL.replace(/^http/, "ws")
 
 export interface ChatMessage {
   chatroomId: number

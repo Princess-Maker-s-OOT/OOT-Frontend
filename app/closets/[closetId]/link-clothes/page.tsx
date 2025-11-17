@@ -1,12 +1,13 @@
 import LinkClothesForm from "@/components/LinkClothesForm"
 
 interface Props {
-  params: {
+  params: Promise<{
     closetId: string
-  }
+  }>
 }
 
-export default function LinkClothesPage({ params }: Props) {
-  const closetId = Number(params.closetId)
+export default async function LinkClothesPage({ params }: Props) {
+  const resolvedParams = await params
+  const closetId = Number(resolvedParams.closetId)
   return <LinkClothesForm closetId={closetId} />
 }

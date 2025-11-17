@@ -56,7 +56,7 @@ export default function ChatButton({ salePostId }: ChatButtonProps) {
     <button
       onClick={handleChatClick}
       disabled={loading}
-      className="px-6 py-2 bg-sky-300 text-white rounded hover:bg-sky-400 disabled:bg-gray-300 disabled:cursor-not-allowed"
+      className="h-10 px-6 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 inline-flex items-center justify-center"
     >
       {loading ? "처리 중..." : "채팅하기"}
     </button>

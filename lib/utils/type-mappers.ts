@@ -3,39 +3,23 @@
  */
 
 import type { Chatroom } from "@/types/chat"
-import type { MockChatroom } from "@/lib/mock/chatroom"
 
 /**
- * API Chatroom (백엔드)을 UI MockChatroom (프론트엔드)로 변환
- * 필드 불일치 및 기본값 처리를 안전하게 수행
+ * API Chatroom 응답을 UI 형태로 변환 (이제 실제 API 타입 사용)
  */
-export function mapApiChatroomToUI(apiChatroom: any): MockChatroom {
+export function mapApiChatroomToUI(apiChatroom: any): Chatroom {
   return {
-    chatroomId: apiChatroom?.chatroomId ?? apiChatroom?.salePostId ?? 0,
-    salePostId: apiChatroom?.salePostId ?? 0,
-    otherUserNickname:
-      apiChatroom?.otherUserNickname ??
-      apiChatroom?.otherNickname ??
-      apiChatroom?.nickname ??
-      "알 수 없음",
-    finalChat:
-      apiChatroom?.finalChat ??
-      apiChatroom?.lastMessage ??
-      apiChatroom?.content ??
-      "",
-    afterFinalChatTime:
-      apiChatroom?.afterFinalChatTime ??
-      apiChatroom?.lastMessageAt ??
-      apiChatroom?.createdAt ??
-      new Date().toISOString(),
-    unreadCount: apiChatroom?.unreadCount ?? 0,
+    chatroomId: apiChatroom?.chatroomId ?? 0,
+    otherUserNickname: apiChatroom?.otherUserNickname ?? "알 수 없음",
+    finalChat: apiChatroom?.finalChat ?? "",
+    afterFinalChatTime: apiChatroom?.afterFinalChatTime ?? null,
   }
 }
 
 /**
  * API 채팅방 배열을 UI 형태로 변환
  */
-export function mapApiChatroomsToUI(apiChatrooms: any[]): MockChatroom[] {
+export function mapApiChatroomsToUI(apiChatrooms: any[]): Chatroom[] {
   return apiChatrooms.map(mapApiChatroomToUI)
 }
 

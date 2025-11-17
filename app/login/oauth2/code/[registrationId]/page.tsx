@@ -25,7 +25,7 @@ export default function OAuthCallbackPage() {
         }
 
         // URL에 토큰이 없으면 백엔드 API 호출 (쿠키 기반 인증)
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost"}/api/v1/auth/oauth/tokens`, {
+        const res = await fetch("/api/v1/auth/oauth/tokens", {
           credentials: "include", // 쿠키 포함
         })
 

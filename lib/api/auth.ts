@@ -5,7 +5,7 @@
 
 import { getDeviceInfo } from "../utils/device"
 
-// Next.js 프록시를 사용하므로 빈 문자열 사용 (CORS 문제 해결)
+// 항상 상대 경로 사용 (Next.js rewrites를 통해 프록시됨)
 const API_BASE_URL = ""
 
 // ==================== 요청 타입 ====================

@@ -1,12 +1,13 @@
 import ClosetDetail from "@/components/ClosetDetail"
 
 interface Props {
-  params: {
+  params: Promise<{
     closetId: string
-  }
+  }>
 }
 
-export default function ClosetDetailPage({ params }: Props) {
-  const closetId = Number(params.closetId)
+export default async function ClosetDetailPage({ params }: Props) {
+  const resolvedParams = await params
+  const closetId = Number(resolvedParams.closetId)
   return <ClosetDetail closetId={closetId} />
 }

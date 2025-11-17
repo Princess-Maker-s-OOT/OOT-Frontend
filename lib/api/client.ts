@@ -2,8 +2,7 @@
  * API 클라이언트 - 인증 헤더 자동 추가
  */
 
-// Next.js 프록시를 사용하므로 빈 문자열 사용 (CORS 문제 해결)
-// OAuth 리다이렉트는 NEXT_PUBLIC_API_BASE_URL을 직접 사용
+// 항상 상대 경로 사용 (Next.js rewrites를 통해 프록시됨)
 const API_BASE_URL = ""
 
 interface FetchOptions extends RequestInit {

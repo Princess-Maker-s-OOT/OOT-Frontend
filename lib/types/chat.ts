@@ -1,7 +1,8 @@
 export interface Chatroom {
+  chatroomId: number
   otherUserNickname: string
-  finalChat: string
-  afterFinalChatTime: string
+  finalChat: string | null
+  afterFinalChatTime: string | null
 }
 
 export interface ChatMessage {

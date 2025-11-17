@@ -2,13 +2,14 @@ import EditClosetForm from "@/components/EditClosetForm"
 import DeleteClosetButton from "@/components/DeleteClosetButton"
 
 interface Props {
-  params: {
+  params: Promise<{
     closetId: string
-  }
+  }>
 }
 
-export default function EditClosetPage({ params }: Props) {
-  const closetId = Number(params.closetId)
+export default async function EditClosetPage({ params }: Props) {
+  const resolvedParams = await params
+  const closetId = Number(resolvedParams.closetId)
 
   return (
     <div className="space-y-8">

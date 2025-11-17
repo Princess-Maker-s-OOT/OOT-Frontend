@@ -143,10 +143,10 @@ export default function LoginPage() {
 
   // ✅ 구글 로그인 핸들러
   function handleGoogleLogin() {
-    // 백엔드 Spring Security OAuth2 경로로 리다이렉트
-    // 백엔드가 Google OAuth 전체 플로우를 처리
-    // context-path가 /api로 설정되어 있으므로 /api 포함
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oauth2/authorization/google`
+    // 백엔드 Spring Security OAuth2 경로로 직접 리다이렉트
+    // OAuth 플로우는 프록시를 거치지 않고 백엔드로 직접 이동
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080"
+    window.location.href = `${backendUrl}/api/oauth2/authorization/google`
   }
 
   return (

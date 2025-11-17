@@ -21,11 +21,23 @@ import { apiDelete, apiGet, apiPost, apiPut } from "./client"
 export async function createClothes(
   data: CreateClothesRequest
 ): Promise<CreateClothesSuccessResponse | CreateClothesErrorResponse> {
+  console.log("=== createClothes API 요청 ===")
+  console.log("요청 데이터:", JSON.stringify(data, null, 2))
+
+  // 백엔드 호환성을 위해 imageIds도 함께 전송
+  const requestData = {
+    ...data,
+    imageIds: data.images, // 백엔드가 imageIds를 기대할 경우를 위해
+  }
+
   const result = await apiPost<CreateClothesSuccessResponse["data"]>(
     "/api/v1/clothes",
-    data,
+    requestData,
     { requiresAuth: true }
   )
+
+  console.log("=== createClothes API 응답 ===")
+  console.log("응답 결과:", JSON.stringify(result, null, 2))
 
   if (result.success && result.data) {
     return {

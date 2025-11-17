@@ -6,7 +6,8 @@ import {
   HTTP_STATUS_VALUE,
 } from "@/lib/types/common"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+// Next.js 프록시를 사용하므로 빈 문자열 사용
+const API_BASE_URL = ""
 
 interface FetchOptions extends RequestInit {
   accessToken?: string

@@ -8,17 +8,19 @@ import { useWebSocket } from "@/hooks/useWebSocket"
 export default function ChatDetailPage() {
   const { id } = useParams()
   const chatroomId = Number(id)
-  
+
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(true)
   const [myUserId, setMyUserId] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { connected, messages, sendMessage, setMessages } = useWebSocket(chatroomId)
+  // chatroomId가 유효하지 않으면 0을 전달 (useWebSocket에서 처리)
+  const validChatroomId = !isNaN(chatroomId) && chatroomId > 0 ? chatroomId : 0
+  const { connected, messages, sendMessage, setMessages } = useWebSocket(validChatroomId)
 
   // 초기 메시지 로드
   useEffect(() => {
-    if (!chatroomId) return
+    if (!chatroomId || isNaN(chatroomId) || chatroomId <= 0) return
 
     loadChatHistory()
   }, [chatroomId])

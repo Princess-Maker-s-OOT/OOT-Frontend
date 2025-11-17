@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DeleteSalePost from '@/components/delete-sale-post';
 import BuilderBanner from '@/components/builder-banner';
 import MarketplaceHeader from '@/components/marketplace-header';
@@ -9,7 +9,7 @@ import MarketplaceFooter from '@/components/marketplace-footer';
 import Link from "next/link";
 import PurchaseButton from '@/components/sale-post/PurchaseButton';
 import ChatButton from '@/components/sale-post/ChatButton';
-import { apiGet } from "@/lib/api/client";
+import { apiGet, apiDelete } from "@/lib/api/client";
 
 type SalePostDetail = {
   salePostId: number;
@@ -30,14 +30,29 @@ type SalePostDetail = {
 
 export default function SalePostDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Number(params.id);
-  
+
   const [post, setPost] = useState<SalePostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserNickname, setCurrentUserNickname] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadPost();
+
+    // 현재 로그인한 사용자 정보 가져오기
+    const userInfoStr = localStorage.getItem("userInfo");
+    if (userInfoStr) {
+      try {
+        const userInfo = JSON.parse(userInfoStr);
+        // 닉네임으로 본인 글인지 확인
+        setCurrentUserNickname(userInfo.nickname || null);
+      } catch (e) {
+        console.error("userInfo 파싱 실패:", e);
+      }
+    }
   }, [id]);
 
   async function loadPost() {
@@ -60,6 +75,30 @@ export default function SalePostDetailPage() {
       setLoading(false);
     }
   }
+
+  async function handleDelete() {
+    if (!confirm("정말로 이 판매글을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      const result = await apiDelete(`/api/v1/sale-posts/${id}`);
+      if (result.success) {
+        alert("판매글이 삭제되었습니다.");
+        router.push("/sale-posts");
+      } else {
+        alert(result.message || "삭제에 실패했습니다.");
+      }
+    } catch (err: any) {
+      console.error("삭제 실패:", err);
+      alert(err?.message || "삭제 중 오류가 발생했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  const isOwner = currentUserNickname !== null && post?.sellerNickname === currentUserNickname;
 
   if (loading) {
     return (
@@ -148,14 +187,34 @@ export default function SalePostDetailPage() {
       </main>
 
       <div className="flex justify-center gap-4 py-6">
-        <ChatButton salePostId={post.salePostId} />
-        <PurchaseButton
-          salePostId={post.salePostId}
-          title={post.title}
-          price={post.price}
-          sellerId={post.sellerId}
-          status={(post.status === "SELLING" || post.status === "AVAILABLE") ? "AVAILABLE" : post.status === "RESERVED" ? "RESERVED" : "SOLD"}
-        />
+        {isOwner ? (
+          <>
+            <Link
+              href={`/sale-posts/${post.salePostId}/edit`}
+              className="px-6 py-3 bg-sky-500 text-white rounded-lg font-semibold hover:bg-sky-600 transition"
+            >
+              수정하기
+            </Link>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
+            >
+              {isDeleting ? "삭제 중..." : "삭제하기"}
+            </button>
+          </>
+        ) : (
+          <>
+            <ChatButton salePostId={post.salePostId} />
+            <PurchaseButton
+              salePostId={post.salePostId}
+              title={post.title}
+              price={post.price}
+              sellerId={post.sellerId}
+              status={(post.status === "SELLING" || post.status === "AVAILABLE") ? "AVAILABLE" : post.status === "RESERVED" ? "RESERVED" : "SOLD"}
+            />
+          </>
+        )}
       </div>
     </div>
   );

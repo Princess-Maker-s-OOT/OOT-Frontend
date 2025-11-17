@@ -18,7 +18,8 @@ import type {
 export async function getUserClothesOverview(
   accessToken: string
 ): Promise<GetUserClothesOverviewSuccessResponse | GetUserClothesOverviewErrorResponse> {
-  const response = await fetch("http://localhost/api/v1/dashboards/users/overview", {
+  // Next.js 프록시를 사용하므로 상대 경로 사용
+  const response = await fetch("/api/v1/dashboards/users/overview", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -33,7 +34,8 @@ export async function getUserClothesOverview(
 export async function getWearStatistics(
   accessToken: string
 ): Promise<GetWearStatisticsSuccessResponse | GetWearStatisticsErrorResponse> {
-  const response = await fetch("http://localhost/api/v1/dashboards/users/statistics", {
+  // Next.js 프록시를 사용하므로 상대 경로 사용
+  const response = await fetch("/api/v1/dashboards/users/statistics", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

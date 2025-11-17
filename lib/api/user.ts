@@ -14,7 +14,7 @@ import {
   DeleteProfileImageErrorResponse,
 } from "@/lib/types/user"
 
-import { apiGet, apiPatch, apiPost, apiDelete } from "./client"
+import { apiGet, apiPatch, apiPost, apiPut, apiDelete } from "./client"
 
 /**
  * 내 정보 조회
@@ -121,10 +121,10 @@ export async function updateMyInfo(
 export async function updateProfileImage(
   data: UpdateProfileImageRequest
 ): Promise<UpdateProfileImageSuccessResponse | UpdateProfileImageErrorResponse> {
-  const result = await apiPost<UpdateProfileImageSuccessResponse["data"]>(
+  const result = await apiPut<UpdateProfileImageSuccessResponse["data"]>(
     "/api/v1/user/me/profile-image",
     data,
-    { requiresAuth: true, method: "PUT" }
+    { requiresAuth: true }
   )
 
   if (result.success && result.data) {

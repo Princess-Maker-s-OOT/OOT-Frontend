@@ -186,6 +186,10 @@ export default function ClothesNewPage() {
 
     try {
       setLoading(true)
+      console.log("=== 옷 등록 요청 ===")
+      console.log("이미지 IDs:", form.images)
+      console.log("전체 폼 데이터:", form)
+
       const result = await createClothes({
         categoryId: form.categoryId,
         clothesSize: form.clothesSize,
@@ -194,6 +198,9 @@ export default function ClothesNewPage() {
         images: form.images,
       })
 
+      console.log("=== 옷 등록 응답 ===")
+      console.log("결과:", result)
+
       if (result.success && result.data) {
         toast({
           title: "등록 성공",
@@ -201,6 +208,7 @@ export default function ClothesNewPage() {
         })
         router.push(`/clothes/${result.data.id}`)
       } else {
+        console.error("등록 실패:", result.message)
         toast({
           title: "등록 실패",
           description: result.message || "옷 등록에 실패했습니다.",
@@ -328,7 +336,7 @@ export default function ClothesNewPage() {
               {/* 이미지 미리보기 */}
               {previewImages.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 mt-4">
-                  {previewImages.map((img) => (
+                  {previewImages.map((img, index) => (
                     <div key={img.id} className="relative aspect-square">
                       <Image
                         src={img.url}
@@ -336,6 +344,11 @@ export default function ClothesNewPage() {
                         fill
                         className="object-cover rounded-lg"
                       />
+                      {index === 0 && (
+                        <div className="absolute top-1 left-1 bg-sky-500 text-white text-xs px-2 py-1 rounded">
+                          메인
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={() => removeImage(img.id)}
@@ -346,6 +359,11 @@ export default function ClothesNewPage() {
                     </div>
                   ))}
                 </div>
+              )}
+              {previewImages.length > 0 && (
+                <p className="text-xs text-gray-500 mt-2">
+                  * 첫 번째 이미지가 메인 이미지로 설정됩니다.
+                </p>
               )}
             </div>
 

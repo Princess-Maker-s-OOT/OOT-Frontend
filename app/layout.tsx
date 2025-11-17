@@ -20,6 +20,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        {/* 카카오맵 API 스크립트 */}
+        <script
+          type="text/javascript"
+          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAPS_APP_KEY}&libraries=services&autoload=false`}
+          async
+        />
+      </head>
       <body className={`${inter.className} flex min-h-screen flex-col bg-background font-sans antialiased text-foreground`}>
         <HeaderWrapper />
 

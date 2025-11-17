@@ -17,13 +17,18 @@ export default function MyDevices() {
       return
     }
 
-    getDeviceList().then((res) => {
-      if (res.success) {
-        setDevices(res.data)
-      } else {
-        setError(res.message || "디바이스 조회 실패")
-      }
-    })
+    getDeviceList()
+      .then((res) => {
+        if (res.success) {
+          setDevices(res.data)
+        } else {
+          setError(res.message || "디바이스 조회 실패")
+        }
+      })
+      .catch((err: any) => {
+        console.error("디바이스 목록 조회 오류:", err)
+        setError(err?.message || "디바이스 목록을 불러올 수 없습니다.")
+      })
   }, [])
 
   if (error) return <p className="text-red-600">{error}</p>

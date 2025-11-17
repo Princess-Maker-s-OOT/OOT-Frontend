@@ -308,7 +308,14 @@ export default function NewSalePostPage() {
           <div className="mt-2 space-y-2">
             {form.imageUrls.map((url, i) => (
               <div key={i} className="flex items-center gap-2 bg-gray-50 p-2 rounded">
-                <img src={url} alt={`이미지 ${i + 1}`} className="w-16 h-16 object-cover rounded" />
+                <div className="relative">
+                  <img src={url} alt={`이미지 ${i + 1}`} className="w-16 h-16 object-cover rounded" />
+                  {i === 0 && (
+                    <span className="absolute -top-1 -left-1 bg-sky-500 text-white text-xs px-1 py-0.5 rounded">
+                      메인
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-gray-600 flex-1 truncate">{url}</span>
                 <button
                   type="button"
@@ -320,6 +327,10 @@ export default function NewSalePostPage() {
               </div>
             ))}
           </div>
+
+          {form.imageUrls.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">* 첫 번째 이미지가 썸네일로 사용됩니다.</p>
+          )}
 
           {form.imageUrls.length === 0 && (
             <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>

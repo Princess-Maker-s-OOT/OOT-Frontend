@@ -10,7 +10,10 @@ import MyClothes from "@/components/my/my-clothes"
 import MyCloset from "@/components/my/my-closet"
 import MyProfile from "@/components/my/my-profile"
 import MySalePosts from "@/components/my/my-sale-posts"
-import { Mail, MapPin, Phone, User } from "lucide-react"
+import MyDashboard from "@/components/my/my-dashboard"
+import { Mail, MapPin, Phone, User, BarChart3, Settings } from "lucide-react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export default function MyPage() {
   const router = useRouter()
@@ -118,11 +121,29 @@ export default function MyPage() {
 
             {/* 위치 정보 */}
             <div className="mt-6 pt-6 border-t border-sky-100">
-              <div className="flex items-start gap-2 text-gray-700">
-                <MapPin className="h-5 w-5 text-sky-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-sm text-gray-600">거래 희망 지역</p>
-                  <p className="text-gray-900">{profile.tradeAddress}</p>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-2 text-gray-700">
+                  <MapPin className="h-5 w-5 text-sky-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-sm text-gray-600">거래 희망 지역</p>
+                    <p className="text-gray-900">{profile.tradeAddress}</p>
+                  </div>
+                </div>
+
+                {/* 퀵 액션 버튼 */}
+                <div className="flex gap-2">
+                  <Link href="/my/dashboard">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      대시보드
+                    </Button>
+                  </Link>
+                  <Link href="/my/devices">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Settings className="h-4 w-4" />
+                      디바이스
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -152,11 +173,17 @@ export default function MyPage() {
               >
                 👕 내 옷
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="closet"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-cyan-400 data-[state=active]:text-white text-gray-700 font-semibold rounded-lg px-6 py-2 transition-all"
               >
                 🗄️ 내 옷장
+              </TabsTrigger>
+              <TabsTrigger
+                value="dashboard"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-cyan-400 data-[state=active]:text-white text-gray-700 font-semibold rounded-lg px-6 py-2 transition-all"
+              >
+                📊 대시보드
               </TabsTrigger>
             </TabsList>
           </div>
@@ -164,8 +191,8 @@ export default function MyPage() {
           {/* 탭 컨텐츠 - 각 섹션에 카드 스타일 적용 */}
           <div className="animate-in fade-in">
             <TabsContent value="profile" className="space-y-6">
-              <MyProfile 
-                profile={profile} 
+              <MyProfile
+                profile={profile}
                 onUpdate={async () => {
                   const result = await getMyInfo()
                   if (result.success && result.data) {
@@ -185,6 +212,10 @@ export default function MyPage() {
 
             <TabsContent value="closet" className="space-y-6">
               <MyCloset />
+            </TabsContent>
+
+            <TabsContent value="dashboard" className="space-y-6">
+              <MyDashboard />
             </TabsContent>
           </div>
         </Tabs>

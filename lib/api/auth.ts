@@ -5,7 +5,8 @@
 
 import { getDeviceInfo } from "../utils/device"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+// Next.js 프록시를 사용하므로 빈 문자열 사용 (CORS 문제 해결)
+const API_BASE_URL = ""
 
 // ==================== 요청 타입 ====================
 

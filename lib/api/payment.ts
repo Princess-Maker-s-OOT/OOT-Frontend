@@ -14,7 +14,8 @@ export async function confirmPayment(
   data: PaymentConfirmRequest,
   accessToken: string
 ): Promise<PaymentConfirmSuccessResponse | PaymentConfirmErrorResponse> {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+  // Next.js 프록시를 사용하므로 빈 문자열 사용
+  const API_BASE_URL = ""
 
   const response = await fetch(`${API_BASE_URL}/api/v1/payments/confirm`, {
     method: "POST",
@@ -37,7 +38,8 @@ export async function failPayment(
   data: PaymentFailRequest,
   accessToken: string
 ): Promise<PaymentFailSuccessResponse | PaymentFailErrorResponse> {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+  // Next.js 프록시를 사용하므로 빈 문자열 사용
+  const API_BASE_URL = ""
 
   const response = await fetch(`${API_BASE_URL}/api/v1/payments/${paymentId}/fail`, {
     method: "POST",
@@ -59,7 +61,8 @@ export async function getPaymentById(
   paymentId: number,
   accessToken: string
 ): Promise<any> {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+  // Next.js 프록시를 사용하므로 빈 문자열 사용
+  const API_BASE_URL = ""
 
   const response = await fetch(`${API_BASE_URL}/api/v1/payments/${paymentId}`, {
     method: "GET",

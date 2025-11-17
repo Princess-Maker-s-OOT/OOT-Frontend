@@ -5,7 +5,8 @@ import type { ApiResult } from "./client"
 
 import { apiGet, apiPost } from "./client"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ""
+// Next.js 프록시를 사용하므로 빈 문자열 사용
+const API_BASE_URL = ""
 
 // ==================== Enum 타입 ====================
 

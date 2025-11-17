@@ -143,9 +143,10 @@ export default function LoginPage() {
 
   // ✅ 구글 로그인 핸들러
   function handleGoogleLogin() {
-    // Next.js 프록시를 통해 백엔드로 리다이렉트
-    // next.config.mjs에서 /api/* -> localhost:8080/api/* 매핑
-    window.location.href = "/api/oauth2/authorization/google"
+    // 백엔드 Spring Security OAuth2 경로로 리다이렉트
+    // 백엔드가 Google OAuth 전체 플로우를 처리
+    // context-path가 /api로 설정되어 있으므로 /api 포함
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/oauth2/authorization/google`
   }
 
   return (

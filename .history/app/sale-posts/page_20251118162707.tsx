@@ -71,18 +71,22 @@ function SalePostsPageInner() {
   async function loadPosts() {
     try {
       setLoading(true);
-      // 사용자 거래 희망 위치 정보 가져오기
-      const userRes = await getMyInfo();
       let userLat = null, userLng = null;
-      if (userRes.success && userRes.data) {
-        userLat = userRes.data.tradeLatitude;
-        userLng = userRes.data.tradeLongitude;
-      }
-      // getSalePosts API에 위치 파라미터 전달
-      const salePostsRes = await apiGet<SalePostListResponse>(
-        `/api/v1/sale-posts/public?page=0&size=20${categoryId ? `&categoryId=${categoryId}` : ""}${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}` : ""}`,
-        { requiresAuth: false }
-      );
+      let isLoggedIn = false;
+      // 사용자 거래 희망 위치 정보 가져오기 (로그인 시)
+      try {
+        const userRes = await getMyInfo();
+        if (userRes.success && userRes.data) {
+          userLat = userRes.data.tradeLatitude;
+          userLng = userRes.data.tradeLongitude;
+          isLoggedIn = true;
+        }
+      } catch {}
+      // 로그인 여부에 따라 API 분기
+      let apiUrl = isLoggedIn
+        ? `/api/v1/sale-posts?page=0&size=20${categoryId ? `&categoryId=${categoryId}` : ""}${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}` : ""}`
+        : `/api/v1/sale-posts/public?page=0&size=20${categoryId ? `&categoryId=${categoryId}` : ""}`;
+      const salePostsRes = await apiGet<SalePostListResponse>(apiUrl, { requiresAuth: isLoggedIn });
       if (salePostsRes.success && salePostsRes.data) {
         setPosts(salePostsRes.data.content);
       } else {

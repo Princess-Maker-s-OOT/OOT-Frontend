@@ -38,35 +38,36 @@ type SalePostListResponse = {
 import { Suspense } from "react";
 
 function SalePostsPageInner() {
-    const [categories, setCategories] = useState<CategoryNode[]>([]);
-    const [loadingCategories, setLoadingCategories] = useState(true);
-
-    useEffect(() => {
-      async function loadCategories() {
-        setLoadingCategories(true);
-        try {
-          const result = await getCategories(0, 200);
-          if (result.success && result.data) {
-            setCategories(buildCategoryTree(result.data.content));
-          }
-        } catch (err) {
-          // ignore
-        } finally {
-          setLoadingCategories(false);
-        }
-      }
-      loadCategories();
-    }, []);
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [posts, setPosts] = useState<SalePostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [distance, setDistance] = useState<number>(5); // 기본 5km
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("categoryId");
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    loadCategories();
+  }, []);
+  async function loadCategories() {
+    setLoadingCategories(true);
+    try {
+      const result = await getCategories(0, 200);
+      if (result.success && result.data) {
+        setCategories(buildCategoryTree(result.data.content));
+      }
+    } catch (err) {
+      // ignore
+    } finally {
+      setLoadingCategories(false);
+    }
+  }
+
+  useEffect(() => {
     loadPosts();
-  }, [categoryId]);
+  }, [categoryId, distance]);
 
   async function loadPosts() {
     try {
@@ -78,9 +79,9 @@ function SalePostsPageInner() {
         userLat = userRes.data.tradeLatitude;
         userLng = userRes.data.tradeLongitude;
       }
-      // getSalePosts API에 위치 파라미터 전달
+      // getSalePosts API에 위치 파라미터 전달 (distance 포함)
       const salePostsRes = await apiGet<SalePostListResponse>(
-        `/api/v1/sale-posts/public?page=0&size=20${categoryId ? `&categoryId=${categoryId}` : ""}${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}` : ""}`,
+        `/api/v1/sale-posts/public?page=0&size=20${categoryId ? `&categoryId=${categoryId}` : ""}${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}&distance=${distance}` : ""}`,
         { requiresAuth: false }
       );
       if (salePostsRes.success && salePostsRes.data) {
@@ -98,7 +99,21 @@ function SalePostsPageInner() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div>
-      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <label htmlFor="distance" className="font-semibold text-gray-700">거리(Km):</label>
+            <select
+              id="distance"
+              value={distance}
+              onChange={e => setDistance(Number(e.target.value))}
+              className="border rounded px-2 py-1 text-gray-700"
+            >
+              {[1, 3, 5, 10, 20, 50].map(km => (
+                <option key={km} value={km}>{km}km</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <h1 className="text-2xl font-semibold">판매글 목록</h1>
         <div className="flex gap-2">
           {categoryId && (

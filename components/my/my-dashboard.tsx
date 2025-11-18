@@ -57,19 +57,21 @@ export default function MyDashboard() {
           headers: { Authorization: `Bearer ${token}` }
         })
         const summaryJson = await summaryRes.json()
+        console.log('대시보드 요약 응답:', summaryJson);
         if (!summaryJson.success || !summaryJson.data) {
           throw new Error(summaryJson.message || "요약 정보 조회 실패")
         }
-        setSummary(summaryJson.data)
+        setSummary(summaryJson.data?.data ?? summaryJson.data)
 
         const statisticsRes = await fetch("/api/v1/dashboards/users/statistics", {
           headers: { Authorization: `Bearer ${token}` }
         })
         const statisticsJson = await statisticsRes.json()
+        console.log('대시보드 통계 응답:', statisticsJson);
         if (!statisticsJson.success || !statisticsJson.data) {
           throw new Error(statisticsJson.message || "통계 정보 조회 실패")
         }
-        setStatistics(statisticsJson.data)
+        setStatistics(statisticsJson.data?.data ?? statisticsJson.data)
       } catch (err: any) {
         setError(err?.message || "대시보드 정보를 불러올 수 없습니다.")
       } finally {

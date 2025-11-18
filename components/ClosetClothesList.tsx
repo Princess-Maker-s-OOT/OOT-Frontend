@@ -60,19 +60,18 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
 
   async function handleWearToday(clothesId: number) {
     setWearingId(clothesId)
-    
     try {
       const result = await createWearRecord({ clothesId })
-      
       if (result.success) {
         toast({
           title: "착용 기록 완료",
           description: "오늘 착용한 옷으로 기록되었습니다.",
         })
+        // window.location.reload(); // 새로고침 제거, 즉시 전달만
       } else {
         toast({
           title: "착용 기록 실패",
-          description: result.error || "착용 기록에 실패했습니다.",
+          description: result.message || "착용 기록에 실패했습니다.",
           variant: "destructive",
         })
       }

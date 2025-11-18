@@ -17,7 +17,7 @@ import type {
 export async function createWearRecord(
   request: CreateWearRecordRequest
 ): Promise<ApiResult<WearRecordCreateResponse>> {
-  return apiPost<WearRecordCreateResponse>("/v1/wear-records", request, {
+  return apiPost<WearRecordCreateResponse>("/api/v1/wear-records", request, {
     requiresAuth: true,
   })
 }

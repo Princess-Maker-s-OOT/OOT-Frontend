@@ -106,12 +106,6 @@ function SalePostsPageInner() {
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-semibold">판매글 목록</h1>
         <div className="flex gap-2">
-          <button
-            onClick={loadPosts}
-            className="bg-gray-100 text-gray-700 text-sm px-4 py-2 rounded hover:bg-gray-200 transition"
-          >
-            새로고침
-          </button>
           {isAuthenticated && (
             <a
               href="/sale-posts/new"
@@ -132,12 +126,6 @@ function SalePostsPageInner() {
       {error && (
         <div className="text-center py-20">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
-            onClick={loadPosts}
-            className="px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600"
-          >
-            다시 시도
-          </button>
         </div>
       )}
 

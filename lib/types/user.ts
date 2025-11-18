@@ -9,9 +9,8 @@ export interface UpdateMyInfoRequest {
   nickname?: string | null
   username?: string | null
   phoneNumber?: string | null
-  tradeAddress?: string
-  tradeLatitude?: number
-  tradeLongitude?: number
+  password?: string | null
+  imageUrl?: string | null
 }
 
 export interface UpdateProfileImageRequest {

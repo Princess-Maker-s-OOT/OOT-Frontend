@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { updateMyInfo, verifyPassword, updateProfileImage, deleteProfileImage } from "@/lib/api/user"
+import { updateMyInfo, verifyPassword } from "@/lib/api/user"
 import { createPresignedUrl, saveImageMetadata } from "@/lib/api/image"
 import { UserProfile } from "@/lib/types/user"
 import { Button } from "@/components/ui/button"
@@ -135,10 +135,9 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
         size: file.size
       });
       if (saveResult.success && saveResult.data) {
-        const imageData = saveResult.data.data;
         setImageData({
-          imageId: imageData.id,
-          imageUrl: imageData.url,
+          imageId: saveResult.data.id,
+          imageUrl: saveResult.data.url,
         });
         toast({
           title: "업로드 성공",
@@ -157,24 +156,12 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
     }
   }
 
-  const handleRemoveImage = async () => {
-    try {
-      const result = await deleteProfileImage()
-      if (result.success) {
-        setImageData({ imageId: null, imageUrl: null })
-        toast({
-          title: "삭제 성공",
-          description: "프로필 이미지가 삭제되었습니다.",
-        })
-      }
-    } catch (error) {
-      console.error("이미지 삭제 에러:", error)
-      toast({
-        title: "삭제 실패",
-        description: "이미지 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      })
-    }
+  const handleRemoveImage = () => {
+    setImageData({ imageId: null, imageUrl: null })
+    toast({
+      title: "이미지 제거",
+      description: "프로필 이미지가 제거됩니다. 저장 버튼을 눌러주세요.",
+    })
   }
 
   const searchAddress = async () => {
@@ -243,48 +230,25 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
       return
     }
 
-    if (!(formData.address ?? "").trim()) {
-      toast({
-        title: "입력 오류",
-        description: "거래 주소를 입력해주세요.",
-        variant: "destructive",
-      })
-      return
-    }
-
     try {
       setLoading(true)
 
-      // 프로필 이미지 업데이트 (변경된 경우)
-      if (
-        imageData.imageId &&
-        typeof imageData.imageId === "number" &&
-        imageData.imageId > 0 &&
-          imageData.imageId !== profile.imageId
-      ) {
-        const imgResult = await updateProfileImage({ imageId: imageData.imageId })
-        console.log("프로필 이미지 수정 응답:", imgResult)
-        if (!imgResult.success) {
-          toast({
-            title: "프로필 이미지 수정 실패",
-            description: imgResult.message || "이미지 수정에 실패했습니다.",
-            variant: "destructive",
-          })
-          setLoading(false)
-          return
-        }
-      }
-
       // phoneNumber 빈 문자열이면 undefined로 전송
       const phoneValue = formData.phoneNumber?.trim() ? formData.phoneNumber : undefined
+
+      // imageUrl이 변경된 경우 포함
+      const imageUrlValue = imageData.imageUrl !== profile.imageUrl ? imageData.imageUrl : undefined
+
       const reqData = {
         nickname: formData.nickname,
         phoneNumber: phoneValue,
-        address: formData.address,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
+        ...(imageUrlValue !== undefined && { imageUrl: imageUrlValue }),
       }
       console.log("회원 정보 수정 요청 데이터:", reqData)
+
+      // 거래 주소는 백엔드가 지원하지 않아 제외됨
+      // TODO: 백엔드에 tradeAddress, tradeLatitude, tradeLongitude 필드 추가 필요
+
       const result = await updateMyInfo(reqData)
       console.log("회원 정보 수정 응답:", result)
 

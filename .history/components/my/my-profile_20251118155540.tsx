@@ -122,14 +122,16 @@ export default function MyProfile({ profile, isLoading, error, onRetry, onUpdate
               </div>
             </div>
 
-            {/* 거래희망지역 지도 블록 - 가로 길이 2배 */}
+            {/* 거래희망지역 지도 블록 */}
             {profile.tradeLatitude && profile.tradeLongitude && (
-              <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300 col-span-2 w-full">
+              <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300 w-full">
                 <div className="flex items-center gap-3 mb-2">
                   <MapPin className="h-5 w-5 text-sky-500" />
                   <span className="font-semibold text-sm text-gray-600">거래 희망 지역 지도</span>
                 </div>
-                <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} />
+                <div className="w-full">
+                  <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} height={320} />
+                </div>
               </div>
             )}
           </div>

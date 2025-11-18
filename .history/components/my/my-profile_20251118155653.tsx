@@ -105,31 +105,23 @@ export default function MyProfile({ profile, isLoading, error, onRetry, onUpdate
                 </div>
               )
             })}
-            {/* 거래희망지역(주소) 블록 */}
-            <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300">
-              <div className="flex items-start gap-3">
-                <div className="text-cyan-600 p-2 rounded-lg bg-sky-50 group-hover:bg-sky-100 transition-all">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    거래 희망 지역
-                  </dt>
-                  <dd className="text-gray-900 font-medium truncate hover:text-clip mb-2">
-                    {profile.tradeAddress}
-                  </dd>
-                </div>
-              </div>
-            </div>
-
-            {/* 거래희망지역 지도 블록 - 가로 길이 2배 */}
-            {profile.tradeLatitude && profile.tradeLongitude && (
-              <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300 col-span-2 w-full">
+            {/* 거래희망지역 주소+지도 통합 블록 */}
+            {(profile.tradeAddress || (profile.tradeLatitude && profile.tradeLongitude)) && (
+              <div className="group p-6 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300 w-full flex flex-col gap-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <MapPin className="h-5 w-5 text-sky-500" />
-                  <span className="font-semibold text-sm text-gray-600">거래 희망 지역 지도</span>
+                  <MapPin className="h-6 w-6 text-sky-500" />
+                  <span className="font-semibold text-lg text-gray-700">거래 희망 지역</span>
                 </div>
-                <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} />
+                {profile.tradeAddress && (
+                  <div className="text-gray-900 font-medium text-base mb-2">
+                    {profile.tradeAddress}
+                  </div>
+                )}
+                {profile.tradeLatitude && profile.tradeLongitude && (
+                  <div className="w-full">
+                    <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} height={320} />
+                  </div>
+                )}
               </div>
             )}
           </div>

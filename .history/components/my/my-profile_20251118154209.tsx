@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ErrorView, LoadingView } from "@/components/ui/loading"
 import { UserProfile } from "@/lib/types/user"
-import KakaoMapProfile from "@/components/KakaoMapProfile"
 import { User, Mail, Phone, MapPin, Key, Edit } from "lucide-react"
 import EditMyInfoForm from "@/components/EditMyInfoForm"
 
@@ -57,6 +56,12 @@ export default function MyProfile({ profile, isLoading, error, onRetry, onUpdate
     { icon: Mail, label: "이메일", value: profile.email, color: "text-blue-500" },
     { icon: Phone, label: "전화번호", value: profile.phoneNumber || "미등록", color: "text-sky-600" },
     { 
+      icon: MapPin, 
+      label: "거래 희망 지역", 
+      value: profile.tradeAddress, 
+      color: "text-cyan-600" 
+    },
+    { 
       icon: Key, 
       label: "로그인 방식", 
       value: loginTypeDisplay,
@@ -105,33 +110,6 @@ export default function MyProfile({ profile, isLoading, error, onRetry, onUpdate
                 </div>
               )
             })}
-            {/* 거래희망지역(주소) 블록 */}
-            <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300">
-              <div className="flex items-start gap-3">
-                <div className="text-cyan-600 p-2 rounded-lg bg-sky-50 group-hover:bg-sky-100 transition-all">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    거래 희망 지역
-                  </dt>
-                  <dd className="text-gray-900 font-medium truncate hover:text-clip mb-2">
-                    {profile.tradeAddress}
-                  </dd>
-                </div>
-              </div>
-            </div>
-
-            {/* 거래희망지역 지도 블록 - 가로 길이 2배 */}
-            {profile.tradeLatitude && profile.tradeLongitude && (
-              <div className="group p-4 rounded-lg border border-sky-100 hover:border-sky-300 hover:bg-sky-50/30 transition-all duration-300 col-span-2 w-full">
-                <div className="flex items-center gap-3 mb-2">
-                  <MapPin className="h-5 w-5 text-sky-500" />
-                  <span className="font-semibold text-sm text-gray-600">거래 희망 지역 지도</span>
-                </div>
-                <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} />
-              </div>
-            )}
           </div>
         </div>
       </Card>

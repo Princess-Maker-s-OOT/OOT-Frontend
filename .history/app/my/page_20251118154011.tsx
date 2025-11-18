@@ -219,7 +219,8 @@ export default function MyPage() {
             </TabsContent>
           </div>
         </Tabs>
-      {/* 마이페이지 하단 위치정보 카드+지도 제거 (지도는 프로필에서만 표시) */}
+      {/* 마이페이지 하단에 위치정보 카드+지도만 표시 */}
+      <MyLocationCard address={profile.tradeAddress} lat={profile.tradeLatitude} lng={profile.tradeLongitude} />
     </div>
     </div>
   )

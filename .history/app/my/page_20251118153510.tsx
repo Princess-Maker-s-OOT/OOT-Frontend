@@ -12,7 +12,7 @@ import MyProfile from "@/components/my/my-profile"
 import MySalePosts from "@/components/my/my-sale-posts"
 import MyDashboard from "@/components/my/my-dashboard"
 import { Mail, MapPin, Phone, User, BarChart3, Settings } from "lucide-react"
-import MyLocationCard from "@/components/MyLocationCard"
+import KakaoMapProfile from "@/components/KakaoMapProfile"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
@@ -120,7 +120,7 @@ export default function MyPage() {
               </div>
             </div>
 
-            {/* 거래 희망 지역(상단) - 주소만 표시 */}
+            {/* 위치 정보 */}
             <div className="mt-6 pt-6 border-t border-sky-100">
               <div className="flex items-start justify-between">
                 <div className="flex flex-col gap-2 text-gray-700 w-full max-w-[400px]">
@@ -128,7 +128,7 @@ export default function MyPage() {
                     <MapPin className="h-5 w-5 text-sky-500 flex-shrink-0 mt-0.5" />
                     <span className="font-semibold text-sm text-gray-600">거래 희망 지역</span>
                   </div>
-                  <p className="text-gray-900 mb-4">{profile.tradeAddress}</p>
+                  <p className="text-gray-900 mb-2">{profile.tradeAddress}</p>
                 </div>
                 {/* 퀵 액션 버튼 */}
                 <div className="flex gap-2">
@@ -219,7 +219,13 @@ export default function MyPage() {
             </TabsContent>
           </div>
         </Tabs>
-      {/* 마이페이지 하단 위치정보 카드+지도 제거 (지도는 프로필에서만 표시) */}
+      {/* 페이지 하단에 위치정보 지도 */}
+      {profile.tradeLatitude && profile.tradeLongitude && (
+        <div className="mt-12 flex flex-col items-center">
+          <div className="mb-2 text-base font-semibold text-gray-700">거래 희망 지역 지도</div>
+          <KakaoMapProfile lat={profile.tradeLatitude} lng={profile.tradeLongitude} />
+        </div>
+      )}
     </div>
     </div>
   )

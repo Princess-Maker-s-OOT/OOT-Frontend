@@ -69,7 +69,7 @@ export default function AboutPage() {
               <div className="relative bg-white/40 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-sky-200/50">
                 <div className="relative w-full aspect-[4/3]">
                   <Image
-                    src="/옷의 새로운 여정, 오늘 당신이 이어주세요.png"
+                    src="/옥프로젝트 커버 이미지 최종.png"
                     alt="OOT - Outfit of Today"
                     fill
                     className="object-contain"

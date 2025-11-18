@@ -97,8 +97,8 @@ export default function MyCloset() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {closets.map((closet) => (
-            <Card key={closet.closetId} className="p-8 min-h-[300px] hover:shadow-lg transition-shadow cursor-pointer relative">
-              <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+            <Card key={closet.closetId} className="p-4 hover:shadow-lg transition-shadow cursor-pointer relative">
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <Link href={`/closets/${closet.closetId}/edit`}>
                   <Button size="sm" className="bg-sky-400 hover:bg-sky-500 text-white border-sky-400">수정</Button>
                 </Link>

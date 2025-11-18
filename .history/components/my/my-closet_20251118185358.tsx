@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getMyClosets, deleteCloset } from "@/lib/api/closet"
+import { getMyClosets } from "@/lib/api/closet"
 import { ClosetItem } from "@/lib/types/closet"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -97,28 +97,7 @@ export default function MyCloset() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {closets.map((closet) => (
-            <Card key={closet.closetId} className="p-8 min-h-[300px] hover:shadow-lg transition-shadow cursor-pointer relative">
-              <div className="absolute bottom-4 right-4 flex gap-2 z-10">
-                <Link href={`/closets/${closet.closetId}/edit`}>
-                  <Button size="sm" className="bg-sky-400 hover:bg-sky-500 text-white border-sky-400">수정</Button>
-                </Link>
-                <Button size="sm" variant="destructive" onClick={async () => {
-                  if (!confirm('정말로 이 옷장을 삭제하시겠습니까?')) return;
-                  try {
-                    const result = await deleteCloset(closet.closetId);
-                    if (result.success) {
-                      alert('옷장이 삭제되었습니다.');
-                      window.location.reload();
-                    } else {
-                      alert(result.message || '옷장 삭제에 실패했습니다.');
-                    }
-                  } catch (err) {
-                    alert('옷장 삭제 중 오류가 발생했습니다.');
-                  }
-                }}>
-                  삭제
-                </Button>
-              </div>
+            <Card key={closet.closetId} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
               <Link href={`/closets/${closet.closetId}`} className="block">
                 <div className="aspect-video relative overflow-hidden rounded-lg mb-2 bg-gray-100">
                   {closet.imageUrl ? (
@@ -144,6 +123,30 @@ export default function MyCloset() {
                   {closet.description || "설명 없음"}
                 </p>
               </Link>
+              <div className="flex gap-2 mt-3">
+                <Link href={`/closets/${closet.closetId}/edit`}>
+                  <Button size="sm" variant="outline">수정</Button>
+                </Link>
+                <Button size="sm" variant="destructive" onClick={async () => {
+                  if (!confirm('정말로 이 옷장을 삭제하시겠습니까?')) return;
+                  try {
+                    const res = await fetch(`/api/v1/closets/${closet.closetId}`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+                    });
+                    if (res.ok) {
+                      alert('옷장이 삭제되었습니다.');
+                      window.location.reload();
+                    } else {
+                      alert('옷장 삭제에 실패했습니다.');
+                    }
+                  } catch {
+                    alert('옷장 삭제 중 오류가 발생했습니다.');
+                  }
+                }}>
+                  삭제
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

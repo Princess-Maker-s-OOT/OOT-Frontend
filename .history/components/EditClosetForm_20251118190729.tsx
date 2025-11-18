@@ -136,7 +136,7 @@ export default function EditClosetForm({ closetId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow max-w-xl mx-auto">
-      {/* <h1 className="text-xl font-bold text-sky-700">옷장 정보 수정</h1> */}
+      <h1 className="text-xl font-bold text-sky-700">옷장 정보 수정</h1>
 
       <div>
         <label className="block text-sm font-medium mb-1">옷장 이름</label>

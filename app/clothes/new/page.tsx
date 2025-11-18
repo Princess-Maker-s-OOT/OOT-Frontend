@@ -190,13 +190,16 @@ export default function ClothesNewPage() {
       console.log("이미지 IDs:", form.images)
       console.log("전체 폼 데이터:", form)
 
-      const result = await createClothes({
+      const requestData = {
         categoryId: form.categoryId,
         clothesSize: form.clothesSize,
         clothesColor: form.clothesColor,
         description: form.description,
         images: form.images,
-      })
+      }
+      console.log("전송할 데이터:", JSON.stringify(requestData, null, 2))
+
+      const result = await createClothes(requestData)
 
       console.log("=== 옷 등록 응답 ===")
       console.log("결과:", result)
@@ -293,7 +296,6 @@ export default function ClothesNewPage() {
                   <SelectItem value="GRAY">회색</SelectItem>
                   <SelectItem value="PINK">분홍색</SelectItem>
                   <SelectItem value="NAVY">네이비</SelectItem>
-                  <SelectItem value="BROWN">갈색</SelectItem>
                   <SelectItem value="BEIGE">베이지</SelectItem>
                 </SelectContent>
               </Select>

@@ -9,6 +9,7 @@ import { getCategories, buildCategoryTree } from "@/lib/api/categories";
 import { UpdateSalePostSchema } from "@/lib/validation";
 import type { UpdateSalePostRequest } from "@/lib/types";
 import { Loader2 } from "lucide-react";
+import { apiPut, apiDelete } from "@/lib/api/client";
 
 type CategoryNode = {
   id: number
@@ -30,7 +31,7 @@ export default function EditSalePostPage() {
     tradeLatitude: "37.5665",
     tradeLongitude: "126.9780",
     imageUrls: [],
-    status: "SALE" // 상태 필드 추가 (예시: SALE, SOLD)
+    status: "AVAILABLE" // 상태 필드 추가
   });
   const [previewImages, setPreviewImages] = useState<{ url: string }[]>([]);
   const [addressSearch, setAddressSearch] = useState("");
@@ -82,7 +83,7 @@ export default function EditSalePostPage() {
             tradeLatitude: String(d.tradeLatitude ?? "37.5665"),
             tradeLongitude: String(d.tradeLongitude ?? "126.9780"),
             imageUrls: d.imageUrls ?? [],
-            status: d.status ?? "SALE"
+            status: d.status ?? "AVAILABLE"
           });
           setPreviewImages((d.imageUrls ?? []).map((url: string) => ({ url })));
         } else {
@@ -150,12 +151,7 @@ export default function EditSalePostPage() {
 
   // 수정 요청
   async function updateSalePost(id: string, data: UpdateSalePostRequest) {
-    const response = await fetch(`/api/v1/sale-posts/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-    return await response.json()
+    return await apiPut(`/api/v1/sale-posts/${id}`, data);
   }
 
   // 삭제 요청
@@ -163,11 +159,11 @@ export default function EditSalePostPage() {
     const confirmed = window.confirm("정말 삭제하시겠습니까?")
     if (!confirmed) return
     try {
-      const res = await fetch(`/api/v1/sale-posts/${id}`, { method: "DELETE" })
-      if (res.ok) {
+      const result = await apiDelete(`/api/v1/sale-posts/${id}`)
+      if (result.success) {
         router.push("/sale-posts/my")
       } else {
-        setError("삭제에 실패했습니다.")
+        setError(result.message || "삭제에 실패했습니다.")
       }
     } catch {
       setError("삭제 중 오류가 발생했습니다.")
@@ -245,8 +241,10 @@ export default function EditSalePostPage() {
       setError("카테고리를 선택해주세요.");
       return;
     }
+    // status 필드를 제외하고 백엔드로 전송
+    const { status, ...formWithoutStatus } = form;
     const parsed = UpdateSalePostSchema.safeParse({
-      ...form,
+      ...formWithoutStatus,
       price: form.price,
     });
     if (!parsed.success) {
@@ -424,8 +422,9 @@ export default function EditSalePostPage() {
                     value={form.status}
                     onChange={e => setForm({ ...form, status: e.target.value })}
                   >
-                    <option value="SALE">판매중</option>
-                    <option value="SOLD">거래완료</option>
+                    <option value="AVAILABLE">판매중</option>
+                    <option value="RESERVED">예약중</option>
+                    <option value="SOLD_OUT">거래완료</option>
                   </select>
                 </div>
         {/* 메시지 */}

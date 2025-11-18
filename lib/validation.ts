@@ -25,7 +25,7 @@ export const CreateSalePostSchema = z.object({
 export type CreateSalePostRequest = z.infer<typeof CreateSalePostSchema>;
 
 export const UpdateSalePostSchema = CreateSalePostSchema;
-export type UpdateSalePostRequest = CreateSalePostRequest;
+export type UpdateSalePostRequest = z.infer<typeof UpdateSalePostSchema>;
 
 export const VerifyPasswordSchema = z.object({
   password: z.string().min(1, "비밀번호를 입력해주세요."),

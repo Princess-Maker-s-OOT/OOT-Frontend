@@ -137,7 +137,7 @@ export interface CategoryNode {
 export function buildCategoryTree(flatCategories: CategoryResponse[]): CategoryNode[] {
   const sorted = [...flatCategories].sort((a, b) => a.id - b.id)
   const categoryMap = new Map<number, CategoryNode>()
-  
+
   // 모든 카테고리를 노드로 변환
   sorted.forEach((cat) => {
     categoryMap.set(cat.id, {
@@ -165,16 +165,16 @@ export function buildCategoryTree(flatCategories: CategoryResponse[]): CategoryN
     const midNode = categoryMap.get(mid.id)!
     root1.children!.push(midNode)
     
-    // 각 중분류에 소분류 할당 (ID 범위로 추정)
+    // 각 중분류에 소분류 할당 (실제 DB 구조 기반)
     const midIdRanges: Record<number, [number, number]> = {
-      4: [12, 18],   // 아우터 → 자켓~후드집업
-      5: [19, 25],   // 상의 → 반팔티~민소매
-      6: [26, 30],   // 하의 → 청바지~트레이닝팬츠
-      7: [31, 35],   // 신발 → 스니커즈~구두
-      8: [36, 39],   // 가방 → 백팩~토트백
-      9: [40, 45],   // 액세서리 → 모자~머플러/스카프
-      10: [46, 47],  // 이너웨어 → 러닝/탱크탑~드로즈/트렁크
-      11: [48, 49],  // 라이프웨어 → 홈웨어~스포츠웨어
+      4: [19, 25],   // 아우터 → 자켓~후드집업
+      5: [26, 32],   // 상의 → 반팔 티셔츠~민소매
+      6: [33, 37],   // 하의 → 청바지~트레이닝팬츠
+      7: [40, 44],   // 신발 → 스니커즈~구두
+      8: [47, 50],   // 가방 → 백팩~토트백
+      9: [54, 59],   // 액세서리 → 모자~머플러/스카프
+      10: [61, 62],  // 이너웨어 → 러닝/탱크탑~드로즈/트렁크
+      11: [64, 65],  // 라이프웨어 → 홈웨어~스포츠웨어
     }
     
     const range = midIdRanges[mid.id]

@@ -85,7 +85,7 @@ export default function LinkClothesForm({ closetId }: Props) {
             ) : clothesList.length === 0 ? (
               <div className="text-xs text-gray-500">등록된 옷이 없습니다.</div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-24">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
                 {clothesList.map((c) => {
                   const imageUrl = c.clothesImages?.find((img) => img.isMain)?.imageUrl || c.clothesImages?.[0]?.imageUrl
                   const checked = selectedIds.includes(c.id)

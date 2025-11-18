@@ -97,20 +97,8 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
           const detail = clothesDetails[item.clothesId]
           const imageUrl = detail?.clothesImages?.find((img: any) => img.isMain)?.imageUrl || detail?.clothesImages?.[0]?.imageUrl
           return (
-            <div key={item.linkId} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-[200px] h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
-              {/* X(삭제) 버튼 오른쪽 상단 */}
-              {isMine && (
-                <button
-                  onClick={() => handleRemove(item.clothesId)}
-                  disabled={loadingId === item.clothesId}
-                  className="absolute top-2 right-2 bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-500 disabled:opacity-50 text-xs shadow"
-                  title="옷 제거"
-                  style={{ zIndex: 2 }}
-                >
-                  <span className="sr-only">옷 제거</span>
-                  &#10005;
-                </button>
-              )}
+            <div key={item.linkId} className={`flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-[200px] h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
+              {/* ...옷 이미지, 정보, 오늘착용 버튼만 표시... */}
               {/* 옷 이미지 */}
               {imageUrl ? (
                 <img src={imageUrl} alt="옷 이미지" className="w-32 h-32 object-cover rounded-2xl mb-4" />

@@ -91,50 +91,48 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
   if (!items.length) return <div className="p-6 text-sm text-gray-500">등록된 옷이 없습니다.</div>
 
   return (
-    <div className="max-w-[80rem] mx-auto p-8">
-      <div className="grid grid-cols-3 lg:grid-cols-4 gap-16">
-        {items.map((item) => {
-          const detail = clothesDetails[item.clothesId]
-          const imageUrl = detail?.clothesImages?.find((img: any) => img.isMain)?.imageUrl || detail?.clothesImages?.[0]?.imageUrl
-          return (
-            <div key={item.linkId} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-[200px] h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
-              {/* X(삭제) 버튼 오른쪽 상단 */}
-              {isMine && (
+    <div className="max-w-3xl mx-auto p-6 space-y-4">
+      <h1 className="text-xl font-bold text-sky-700 mb-4">등록된 옷 목록</h1>
+      {items.map((item) => {
+        const detail = clothesDetails[item.clothesId]
+        const imageUrl = detail?.clothesImages?.find((img: any) => img.isMain)?.imageUrl || detail?.clothesImages?.[0]?.imageUrl
+        return (
+          <div key={item.linkId} className="border rounded p-4 bg-white shadow-sm flex gap-4 items-center">
+            {/* 옷 이미지 */}
+            {imageUrl ? (
+              <img src={imageUrl} alt="옷 이미지" className="w-20 h-20 object-cover rounded" />
+            ) : (
+              <div className="w-20 h-20 bg-gray-100 flex items-center justify-center rounded text-gray-400 text-xs">이미지 없음</div>
+            )}
+            {/* 옷 정보 */}
+            <div className="flex-1 space-y-1">
+              <div className="text-base font-semibold">{detail?.description || item.description}</div>
+              <div className="text-sm text-gray-600">색상: {detail?.clothesColor || item.clothesColor} / 사이즈: {detail?.clothesSize || item.clothesSize}</div>
+            </div>
+            {/* 버튼 영역 */}
+            {isMine && (
+              <div className="flex flex-col gap-2 items-end">
+                <button
+                  onClick={() => handleWearToday(item.clothesId)}
+                  disabled={wearingId === item.clothesId}
+                  className="bg-sky-600 text-white px-3 py-1 rounded hover:bg-sky-700 disabled:opacity-50 text-xs"
+                >
+                  {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
+                </button>
                 <button
                   onClick={() => handleRemove(item.clothesId)}
                   disabled={loadingId === item.clothesId}
-                  className="absolute top-2 right-2 bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-500 disabled:opacity-50 text-xs shadow"
+                  className="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 disabled:opacity-50 text-xs"
                   title="옷 제거"
-                  style={{ zIndex: 2 }}
                 >
                   <span className="sr-only">옷 제거</span>
                   &#10005;
                 </button>
-              )}
-              {/* 옷 이미지 */}
-              {imageUrl ? (
-                <img src={imageUrl} alt="옷 이미지" className="w-32 h-32 object-cover rounded-2xl mb-4" />
-              ) : (
-                <div className="w-32 h-32 bg-gray-100 flex items-center justify-center rounded-2xl text-gray-400 text-base mb-4">이미지 없음</div>
-              )}
-              {/* 옷 정보 */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center w-full mb-2">
-                <div className="text-lg font-bold mb-2 truncate max-w-[120px]">{detail?.description || item.description}</div>
-                <div className="text-sm text-gray-600">{detail?.clothesColor || item.clothesColor} / {detail?.clothesSize || item.clothesSize}</div>
               </div>
-              {isMine && (
-                <button
-                  onClick={() => handleWearToday(item.clothesId)}
-                  disabled={wearingId === item.clothesId}
-                  className="w-full py-3 bg-gradient-to-r from-pink-400 to-sky-400 text-white rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-base transition mt-4"
-                >
-                  {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
-                </button>
-              )}
-            </div>
-          )
-        })}
-      </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

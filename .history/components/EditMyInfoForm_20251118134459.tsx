@@ -115,7 +115,7 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
       if (!presigned.success || !presigned.data) {
         throw new Error(presigned.message || "이미지 업로드 URL 생성 실패");
       }
-      const { presignedUrl, fileUrl, s3Key } = presigned.data as { presignedUrl: string; fileUrl: string; s3Key: string };
+      const { presignedUrl, fileUrl, s3Key } = presigned.data;
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },

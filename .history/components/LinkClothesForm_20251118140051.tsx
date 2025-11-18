@@ -85,12 +85,12 @@ export default function LinkClothesForm({ closetId }: Props) {
             ) : clothesList.length === 0 ? (
               <div className="text-xs text-gray-500">등록된 옷이 없습니다.</div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-24">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-32 w-full">
                 {clothesList.map((c) => {
                   const imageUrl = c.clothesImages?.find((img) => img.isMain)?.imageUrl || c.clothesImages?.[0]?.imageUrl
                   const checked = selectedIds.includes(c.id)
                   return (
-                    <label key={c.id} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 aspect-square min-h-[220px] cursor-pointer transition ${checked ? 'ring-4 ring-pink-400' : ''}`}>
+                    <label key={c.id} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 aspect-square min-h-[220px] flex-1 w-full cursor-pointer transition ${checked ? 'ring-4 ring-pink-400' : ''}`}>
                       <input
                         type="checkbox"
                         className="absolute top-2 left-2 w-5 h-5 accent-pink-400"
@@ -100,13 +100,13 @@ export default function LinkClothesForm({ closetId }: Props) {
                         }}
                       />
                       {imageUrl ? (
-                        <img src={imageUrl} alt="옷 이미지" className="w-28 h-28 object-cover rounded-xl mb-3" />
+                        <img src={imageUrl} alt="옷 이미지" className="w-32 h-32 object-cover rounded-xl mb-3" />
                       ) : (
-                        <div className="w-28 h-28 bg-gray-100 flex items-center justify-center rounded-xl text-gray-400 text-sm mb-3">이미지 없음</div>
+                        <div className="w-32 h-32 bg-gray-100 flex items-center justify-center rounded-xl text-gray-400 text-sm mb-3">이미지 없음</div>
                       )}
-                      <div className="flex-1 flex flex-col items-center justify-center text-center">
-                        <div className="text-lg font-bold mb-2 truncate max-w-[120px]">{c.description}</div>
-                        <div className="text-sm text-gray-600">{c.clothesColor} / {c.clothesSize}</div>
+                      <div className="flex flex-col items-center justify-center text-center w-full h-full">
+                        <div className="text-lg font-bold mb-2 truncate max-w-[140px]">{c.description}</div>
+                        <div className="text-sm text-gray-600 mb-2">{c.clothesColor} / {c.clothesSize}</div>
                       </div>
                     </label>
                   )

@@ -65,7 +65,7 @@ export default function NewSalePostPage() {
     }
     window.kakao.maps.load(() => {
       const geocoder = new window.kakao.maps.services.Geocoder();
-      geocoder.addressSearch(addressSearch, (result: any, status: string) => {
+      geocoder.addressSearch(addressSearch, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK && result[0]) {
           const { address_name, y, x } = result[0];
           setForm((prev) => ({
@@ -131,7 +131,7 @@ export default function NewSalePostPage() {
 
     const parsed = CreateSalePostSchema.safeParse({
       ...form,
-      price: form.price,
+      price: form.price === "" ? undefined : Number(form.price),
     });
 
     if (!parsed.success) {
@@ -176,7 +176,7 @@ export default function NewSalePostPage() {
     setUploadingImage(true);
     setErrors(null);
     const newImageUrls: string[] = [];
-    const newPreviews: { id: number; url: string }[] = [];
+    const newPreviews: { url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({
@@ -206,7 +206,7 @@ export default function NewSalePostPage() {
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
           newImageUrls.push(imageData.url);
-          newPreviews.push({ id: Date.now(), url: imageData.url });
+          newPreviews.push({ url: imageData.url });
         }
       }
       setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));

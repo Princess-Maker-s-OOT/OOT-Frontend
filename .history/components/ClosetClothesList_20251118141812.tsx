@@ -97,8 +97,8 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
           const detail = clothesDetails[item.clothesId]
           const imageUrl = detail?.clothesImages?.find((img: any) => img.isMain)?.imageUrl || detail?.clothesImages?.[0]?.imageUrl
           return (
-            <div key={item.linkId} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-[200px] h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
-              {/* X(삭제) 버튼 오른쪽 상단 */}
+            <div key={item.linkId} className={`flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-60 h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
+              {/* X 버튼 오른쪽 상단 */}
               {isMine && (
                 <button
                   onClick={() => handleRemove(item.clothesId)}

@@ -91,21 +91,20 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
   if (!items.length) return <div className="p-6 text-sm text-gray-500">등록된 옷이 없습니다.</div>
 
   return (
-    <div className="max-w-[80rem] mx-auto p-8">
-      <div className="grid grid-cols-3 lg:grid-cols-4 gap-16">
+    <div className="max-w-4xl w-full mx-auto p-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-32 w-full">
         {items.map((item) => {
           const detail = clothesDetails[item.clothesId]
           const imageUrl = detail?.clothesImages?.find((img: any) => img.isMain)?.imageUrl || detail?.clothesImages?.[0]?.imageUrl
           return (
-            <div key={item.linkId} className={`relative flex flex-col items-center justify-between border-2 border-pink-200 rounded-2xl bg-sky-50 shadow-lg p-6 w-[200px] h-80 transition hover:scale-105 hover:shadow-xl`} style={{ zIndex: 1 }}>
-              {/* X(삭제) 버튼 오른쪽 상단 */}
+            <div key={item.linkId} className="relative flex flex-col items-center justify-between border rounded-2xl bg-white shadow-lg p-6 aspect-square min-h-[220px] flex-1 w-full">
+              {/* X 버튼 오른쪽 상단 */}
               {isMine && (
                 <button
                   onClick={() => handleRemove(item.clothesId)}
                   disabled={loadingId === item.clothesId}
                   className="absolute top-2 right-2 bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-500 disabled:opacity-50 text-xs shadow"
                   title="옷 제거"
-                  style={{ zIndex: 2 }}
                 >
                   <span className="sr-only">옷 제거</span>
                   &#10005;
@@ -113,24 +112,24 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
               )}
               {/* 옷 이미지 */}
               {imageUrl ? (
-                <img src={imageUrl} alt="옷 이미지" className="w-32 h-32 object-cover rounded-2xl mb-4" />
+                <img src={imageUrl} alt="옷 이미지" className="w-32 h-32 object-cover rounded-xl mb-3" />
               ) : (
-                <div className="w-32 h-32 bg-gray-100 flex items-center justify-center rounded-2xl text-gray-400 text-base mb-4">이미지 없음</div>
+                <div className="w-32 h-32 bg-gray-100 flex items-center justify-center rounded-xl text-gray-400 text-sm mb-3">이미지 없음</div>
               )}
-              {/* 옷 정보 */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center w-full mb-2">
-                <div className="text-lg font-bold mb-2 truncate max-w-[120px]">{detail?.description || item.description}</div>
-                <div className="text-sm text-gray-600">{detail?.clothesColor || item.clothesColor} / {detail?.clothesSize || item.clothesSize}</div>
+              {/* 옷 정보 + 오늘착용 버튼 포함 */}
+              <div className="flex flex-col items-center justify-center text-center w-full h-full">
+                <div className="text-lg font-bold mb-2 truncate max-w-[140px]">{detail?.description || item.description}</div>
+                <div className="text-sm text-gray-600 mb-2">{detail?.clothesColor || item.clothesColor} / {detail?.clothesSize || item.clothesSize}</div>
+                {isMine && (
+                  <button
+                    onClick={() => handleWearToday(item.clothesId)}
+                    disabled={wearingId === item.clothesId}
+                    className="w-full mt-2 bg-sky-500 text-white py-2 rounded-xl hover:bg-sky-600 disabled:opacity-50 text-base font-bold shadow"
+                  >
+                    {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
+                  </button>
+                )}
               </div>
-              {isMine && (
-                <button
-                  onClick={() => handleWearToday(item.clothesId)}
-                  disabled={wearingId === item.clothesId}
-                  className="w-full py-3 bg-gradient-to-r from-pink-400 to-sky-400 text-white rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-base transition mt-4"
-                >
-                  {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
-                </button>
-              )}
             </div>
           )
         })}

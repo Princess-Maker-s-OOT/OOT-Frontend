@@ -38,7 +38,7 @@ export default function ClosetDetail({ closetId }: Props) {
 
   return (
     <div className="min-h-screen bg-sky-100 py-10">
-      <div className="max-w-[900px] mx-auto p-6 bg-white rounded-3xl shadow-lg border-2 border-pink-200 relative">
+      <div className="max-w-xl mx-auto p-6 bg-white rounded-3xl shadow-lg border-2 border-pink-200 relative">
         {/* 타이틀만 (곰돌이 제거) */}
         <div className="flex items-center gap-2 mb-4">
           <h1 className="text-2xl font-bold text-pink-500 drop-shadow">디지털 옷장</h1>

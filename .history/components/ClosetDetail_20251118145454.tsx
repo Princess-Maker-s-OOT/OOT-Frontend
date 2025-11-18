@@ -61,7 +61,9 @@ export default function ClosetDetail({ closetId }: Props) {
           </button>
         )}
         <div className="mt-8">
-          <ClosetClothesList closetId={closet.closetId} isMine={isMine} />
+          <ClosetClothesList closetId={closet.closetId} isMine={isMine} showRemoveButton={false} />
+        // 예시: 일반 옷 블록에서 삭제 버튼이 보이게 하려면 아래처럼 사용하세요
+        // <ClosetClothesList closetId={closetId} isMine={true} showRemoveButton={true} />
         </div>
         {/* 빈 공간 안내 메시지 */}
         <div className="mt-8 text-center text-sm text-gray-400">

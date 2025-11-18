@@ -123,13 +123,22 @@ export default function ClosetClothesList({ closetId, isMine = false }: Props) {
                 <div className="text-sm text-gray-600">{detail?.clothesColor || item.clothesColor} / {detail?.clothesSize || item.clothesSize}</div>
               </div>
               {isMine && (
-                <button
-                  onClick={() => handleWearToday(item.clothesId)}
-                  disabled={wearingId === item.clothesId}
-                  className="w-full py-3 bg-gradient-to-r from-pink-400 to-sky-400 text-white rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-base transition mt-4"
-                >
-                  {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
-                </button>
+                <div className="w-full flex flex-col gap-2 mt-4">
+                  <button
+                    onClick={() => handleWearToday(item.clothesId)}
+                    disabled={wearingId === item.clothesId}
+                    className="w-full py-3 bg-gradient-to-r from-pink-400 to-sky-400 text-white rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-base transition"
+                  >
+                    {wearingId === item.clothesId ? "기록 중..." : "오늘착용"}
+                  </button>
+                  <button
+                    onClick={() => handleRemove(item.clothesId)}
+                    disabled={loadingId === item.clothesId}
+                    className="w-full py-2 bg-red-500 text-white rounded-full hover:bg-red-600 font-bold shadow text-sm transition"
+                  >
+                    {loadingId === item.clothesId ? "제거 중..." : "옷 제거"}
+                  </button>
+                </div>
               )}
             </div>
           )

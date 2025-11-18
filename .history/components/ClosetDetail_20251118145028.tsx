@@ -61,7 +61,7 @@ export default function ClosetDetail({ closetId }: Props) {
           </button>
         )}
         <div className="mt-8">
-          <ClosetClothesList closetId={closet.closetId} isMine={isMine} />
+          <ClosetClothesList closetId={closet.closetId} isMine={isMine} showRemoveButton={false} />
         </div>
         {/* 빈 공간 안내 메시지 */}
         <div className="mt-8 text-center text-sm text-gray-400">

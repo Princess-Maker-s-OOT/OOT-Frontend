@@ -20,11 +20,12 @@ export default function ClosetDetail({ closetId }: Props) {
         if ("data" in res) {
           setCloset(res.data)
           // 본인 옷장 여부 확인
-          const { getMyClosets } = await import("@/lib/api/closet")
-          const myClosetsRes = await getMyClosets()
-          if (myClosetsRes.success && myClosetsRes.data) {
-            const isMine = myClosetsRes.data.content.some((c) => c.closetId === closetId)
-            setIsMine(isMine)
+          const userRes = await import("@/lib/api/user")
+          const getMyInfo = userRes.getMyInfo
+          const userResult = await getMyInfo()
+          if (userResult.success && userResult.data) {
+            // ownerId와 userId 비교
+            setIsMine(res.data.ownerId === userResult.data.userId)
           }
         } else setError((res as any)?.message ?? "오류가 발생했습니다.")
       })
@@ -37,10 +38,11 @@ export default function ClosetDetail({ closetId }: Props) {
   if (!closet) return <div className="p-6 text-sm text-gray-500">옷장 정보를 불러오는 중...</div>
 
   return (
-    <div className="min-h-screen bg-sky-100 py-10">
-      <div className="max-w-[900px] mx-auto p-6 bg-white rounded-3xl shadow-lg border-2 border-pink-200 relative">
-        {/* 타이틀만 (곰돌이 제거) */}
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-sky-100 to-yellow-100 py-10">
+      <div className="max-w-xl mx-auto p-6 bg-white rounded-3xl shadow-lg border-2 border-pink-200 relative">
+        {/* 귀여운 타이틀 & 아이콘 */}
         <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🧸</span>
           <h1 className="text-2xl font-bold text-pink-500 drop-shadow">디지털 옷장</h1>
         </div>
         {/* 옷장 이미지 */}
@@ -53,20 +55,23 @@ export default function ClosetDetail({ closetId }: Props) {
           공개 여부: <span className="font-bold text-sky-500">{closet.isPublic ? "공개" : "비공개"}</span>
         </div>
         {isMine && (
-          <button
-            className="absolute top-6 right-6 bg-gradient-to-r from-pink-400 to-sky-400 text-white px-5 py-2 rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-lg transition z-10"
-            onClick={() => window.location.href = `/closets/${closet.closetId}/link-clothes`}
-          >
-            + 옷 등록
-          </button>
+          <div className="mt-2 flex justify-center">
+            <button
+              className="bg-gradient-to-r from-pink-400 to-sky-400 text-white px-6 py-2 rounded-full hover:from-pink-500 hover:to-sky-500 font-bold shadow-lg text-lg transition"
+              onClick={() => window.location.href = `/closets/${closet.closetId}/link-clothes`}
+            >
+              + 옷 등록
+            </button>
+          </div>
         )}
         <div className="mt-8">
+          {/* 옷장에 등록된 옷 리스트 표시 */}
           <ClosetClothesList closetId={closet.closetId} isMine={isMine} />
         </div>
         {/* 빈 공간 안내 메시지 */}
         <div className="mt-8 text-center text-sm text-gray-400">
           {isMine && (
-            <span>👗 옷을 추가해서 나만의 디지털 옷장을 완성해보세요!</span>
+            <span>👗 옷을 추가해서 나만의 귀여운 디지털 옷장을 완성해보세요!</span>
           )}
         </div>
       </div>

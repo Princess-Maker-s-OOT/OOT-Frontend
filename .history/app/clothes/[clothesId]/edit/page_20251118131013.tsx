@@ -1,6 +1,5 @@
-
-"use client"
 import { Upload, X } from "lucide-react"
+"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"

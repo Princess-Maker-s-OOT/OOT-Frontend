@@ -176,7 +176,7 @@ export default function NewSalePostPage() {
     setUploadingImage(true);
     setErrors(null);
     const newImageUrls: string[] = [];
-    const newPreviews: { id: number; url: string }[] = [];
+    const newPreviews: { url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({

@@ -1,18 +1,27 @@
-"use client";
+"use client"
 
 import React, { useEffect, useState } from "react";
-import { CreateSalePostSchema, CreateSalePostRequest } from "@/lib/validation";
+import Image from "next/image";
+import { createPresignedUrl, saveImageMetadata } from "@/lib/api/image";
+import { useParams, useRouter } from "next/navigation";
 import CategorySelector from "@/components/CategorySelector";
 import { getCategories, buildCategoryTree, type CategoryNode } from "@/lib/api/categories";
-import { createPresignedUrl, saveImageMetadata } from "@/lib/api/image";
-import Image from "next/image";
-import { apiPost } from "@/lib/api/client";
+import { UpdateSalePostSchema } from "@/lib/validation";
+import type { UpdateSalePostRequest } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import { Upload, X } from "lucide-react";
 
-export default function NewSalePostPage() {
-  // form state 선언을 최상단에 위치
-  const [form, setForm] = useState<CreateSalePostRequest>({
+type CategoryNode = {
+  id: number
+  name: string
+  children?: CategoryNode[]
+}
+
+export default function EditSalePostPage() {
+  const { id } = useParams()
+  const salePostId = Array.isArray(id) ? id[0] : id
+  const router = useRouter()
+
+  const [form, setForm] = useState<UpdateSalePostRequest>({
     title: "",
     content: "",
     price: 0,
@@ -21,10 +30,80 @@ export default function NewSalePostPage() {
     tradeLatitude: "37.5665",
     tradeLongitude: "126.9780",
     imageUrls: [],
+    status: "SALE" // 상태 필드 추가 (예시: SALE, SOLD)
   });
-  const [previewImages, setPreviewImages] = useState<{ id: number; url: string }[]>([]);
+  const [previewImages, setPreviewImages] = useState<{ url: string }[]>([]);
   const [addressSearch, setAddressSearch] = useState("");
   const [searchingAddress, setSearchingAddress] = useState(false);
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // 카테고리 로딩
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        setLoadingCategories(true);
+        const result = await getCategories(0, 200);
+        if (result.success && result.data) {
+          const tree = buildCategoryTree(result.data.content);
+          setCategories(tree);
+          if (tree.length > 0 && form.categoryId === 0) {
+            setForm((prev) => ({ ...prev, categoryId: tree[0].id }));
+          }
+        }
+      } catch (err) {
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+    loadCategories();
+  }, []);
+
+  // 판매글 데이터 불러오기
+  useEffect(() => {
+    if (!salePostId) return;
+    async function fetchData() {
+      try {
+        const res = await fetch(`/api/v1/sale-posts/${salePostId}`);
+        const json = await res.json();
+        if (res.ok && json.data) {
+          const d = json.data;
+          setForm({
+            title: d.title,
+            content: d.content,
+            price: d.price,
+            categoryId: d.categoryId ?? 0,
+            tradeAddress: d.tradeAddress,
+            tradeLatitude: String(d.tradeLatitude ?? "37.5665"),
+            tradeLongitude: String(d.tradeLongitude ?? "126.9780"),
+            imageUrls: d.imageUrls ?? [],
+            status: d.status ?? "SALE"
+          });
+          setPreviewImages((d.imageUrls ?? []).map((url: string) => ({ url })));
+        } else {
+          setError("판매글 데이터를 불러올 수 없습니다.");
+        }
+      } catch {
+        setError("네트워크 오류가 발생했습니다.");
+      }
+    }
+    fetchData();
+  }, [salePostId]);
+  // 카카오맵 스크립트 로드
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+    script.async = true;
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
 
   // 지도 렌더링 (주소 좌표 변경 시)
   useEffect(() => {
@@ -45,17 +124,6 @@ export default function NewSalePostPage() {
     }
   }, [form.tradeLatitude, form.tradeLongitude]);
 
-  // 카카오맵 스크립트 로드
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
-    script.async = true;
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   async function searchAddress() {
     if (!addressSearch.trim()) return;
     setSearchingAddress(true);
@@ -65,7 +133,7 @@ export default function NewSalePostPage() {
     }
     window.kakao.maps.load(() => {
       const geocoder = new window.kakao.maps.services.Geocoder();
-      geocoder.addressSearch(addressSearch, (result: any, status: string) => {
+      geocoder.addressSearch(addressSearch, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK && result[0]) {
           const { address_name, y, x } = result[0];
           setForm((prev) => ({
@@ -79,104 +147,40 @@ export default function NewSalePostPage() {
       });
     });
   }
-  const [categories, setCategories] = useState<CategoryNode[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [imageInput, setImageInput] = useState("");
-  const [errors, setErrors] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
-  // 카테고리 목록 로드
-  useEffect(() => {
-    loadCategories()
-  }, [])
-
-  async function loadCategories() {
-    try {
-      setLoadingCategories(true)
-      const result = await getCategories(0, 200)
-      
-      if (result.success && result.data) {
-        const tree = buildCategoryTree(result.data.content)
-        setCategories(tree)
-        
-        // 첫 번째 최상위 카테고리를 기본값으로 설정
-        if (tree.length > 0 && form.categoryId === 0) {
-          setForm(prev => ({ ...prev, categoryId: tree[0].id }))
-        }
-      }
-    } catch (err) {
-      console.error("카테고리 로드 실패:", err)
-      setCategories([])
-    } finally {
-      setLoadingCategories(false)
-    }
+  // 수정 요청
+  async function updateSalePost(id: string, data: UpdateSalePostRequest) {
+    const response = await fetch(`/api/v1/sale-posts/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    return await response.json()
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrors(null);
-    setSuccess(null);
-
-    if (form.imageUrls.length === 0) {
-      setErrors("이미지를 최소 1개 이상 등록해주세요.");
-      return;
-    }
-
-    if (!form.categoryId || form.categoryId === 0) {
-      setErrors("카테고리를 선택해주세요.");
-      return;
-    }
-
-    const parsed = CreateSalePostSchema.safeParse({
-      ...form,
-      price: form.price,
-    });
-
-    if (!parsed.success) {
-      setErrors(parsed.error.errors.map((i) => i.message).join(", "));
-      return;
-    }
-
-    console.log("판매글 작성 요청 데이터:", parsed.data);
-
-    setLoading(true);
+  // 삭제 요청
+  async function deleteSalePost(id: string) {
+    const confirmed = window.confirm("정말 삭제하시겠습니까?")
+    if (!confirmed) return
     try {
-      const result = await apiPost("/api/v1/sale-posts", parsed.data);
-      
-      console.log("판매글 작성 응답:", result);
-      
-      if (result.success) {
-        setSuccess("판매글이 등록되었습니다.");
-        // 2초 후 판매글 목록으로 이동
-        setTimeout(() => {
-          window.location.href = "/sale-posts";
-        }, 2000);
+      const res = await fetch(`/api/v1/sale-posts/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        router.push("/sale-posts/my")
       } else {
-        setErrors(result.message || "등록 실패");
+        setError("삭제에 실패했습니다.")
       }
-    } catch (err: any) {
-      console.error("판매글 작성 에러:", err);
-      setErrors(err?.message || "네트워크 오류");
-    } finally {
-      setLoading(false);
+    } catch {
+      setError("삭제 중 오류가 발생했습니다.")
     }
-  }
-
-  function addImage() {
-    if (!imageInput) return;
-    setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, imageInput] }));
-    setImageInput("");
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploadingImage(true);
-    setErrors(null);
+    setError(null);
     const newImageUrls: string[] = [];
-    const newPreviews: { id: number; url: string }[] = [];
+    const newPreviews: { url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({
@@ -206,87 +210,111 @@ export default function NewSalePostPage() {
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
           newImageUrls.push(imageData.url);
-          newPreviews.push({ id: Date.now(), url: imageData.url });
+          newPreviews.push({ url: imageData.url });
         }
       }
       setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));
       setPreviewImages((prev) => [...prev, ...newPreviews]);
     } catch (err: any) {
-      setErrors(err?.message || "이미지 업로드 중 오류 발생");
+      setError(err?.message || "이미지 업로드 중 오류 발생");
     } finally {
       setUploadingImage(false);
       e.target.value = "";
     }
   }
 
-  function removeImage(imageId: number) {
+  function removeImage(imageUrl: string) {
     setForm((s) => ({
       ...s,
-      imageUrls: s.imageUrls.filter((url) => url !== previewImages.find((img) => img.id === imageId)?.url),
+      imageUrls: s.imageUrls.filter((url) => url !== imageUrl),
     }));
-    setPreviewImages((prev) => prev.filter((img) => img.id !== imageId));
+    setPreviewImages((prev) => prev.filter((img) => img.url !== imageUrl));
+  }
+
+  // 제출 핸들러
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (form.imageUrls.length === 0) {
+      setError("이미지를 최소 1개 이상 등록해주세요.");
+      return;
+    }
+    if (!form.categoryId || form.categoryId === 0) {
+      setError("카테고리를 선택해주세요.");
+      return;
+    }
+    const parsed = UpdateSalePostSchema.safeParse({
+      ...form,
+      price: form.price === "" ? undefined : Number(form.price),
+    });
+    if (!parsed.success) {
+      setError(parsed.error.errors.map((i) => i.message).join(", "));
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await updateSalePost(salePostId!, parsed.data);
+      if (result.success) {
+        router.push(`/sale-posts/${salePostId}`);
+      } else {
+        setError(result.message || "수정 실패");
+      }
+    } catch (err: any) {
+      setError(err?.message || "알 수 없는 오류");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
+    <div className="max-w-xl mx-auto p-6">
       {/* 상단 안내 */}
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-sky-600">판매글 등록</h1>
+        <h1 className="text-2xl font-bold text-sky-600">판매글 수정</h1>
         <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-          판매하고 싶은 의류 상품을 등록해주세요.<br />
-          사진과 정보를 자세히 입력할수록 거래 성공률이 높아집니다.
+          기존 판매글을 수정하거나 삭제할 수 있습니다.<br />
+          정보가 정확할수록 거래 성공률이 높아집니다.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6 bg-white p-6 rounded shadow">
         {/* 제목 */}
         <div>
-          <label className="block text-sm font-medium mb-1">제목 <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">제목</label>
           <input
             className="w-full border rounded px-3 py-2"
-            maxLength={100}
-            required
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
-          <p className="text-xs text-gray-500 mt-1">최대 100자까지 입력 가능합니다.</p>
         </div>
 
         {/* 내용 */}
         <div>
-          <label className="block text-sm font-medium mb-1">내용 <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">내용</label>
           <textarea
             className="w-full border rounded px-3 py-2"
             rows={6}
-            required
             value={form.content}
             onChange={(e) => setForm({ ...form, content: e.target.value })}
           />
-          <p className="text-xs text-gray-500 mt-1">내용을 입력해주세요.</p>
         </div>
 
         {/* 가격 */}
         <div>
-          <label className="block text-sm font-medium mb-1">가격 <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">가격</label>
           <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
+            type="number"
             className="w-full border rounded px-3 py-2"
-            placeholder="가격을 입력하세요 (예: 15000)"
-            required
             value={form.price}
-            onChange={(e) => {
-              const value = e.target.value.replace(/[^0-9]/g, '')
-              setForm({ ...form, price: value as any })
-            }}
+            onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
           />
-          <p className="text-xs text-gray-500 mt-1">숫자만 입력 가능합니다.</p>
         </div>
 
         {/* 카테고리 */}
         <div>
-          <label className="block text-sm font-medium mb-1">카테고리 <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">카테고리</label>
           {loadingCategories ? (
             <p className="text-sm text-gray-400">카테고리를 불러오는 중...</p>
           ) : (
@@ -325,7 +353,6 @@ export default function NewSalePostPage() {
           {form.tradeAddress && (
             <div className="p-2 mt-2 bg-sky-50 rounded border border-sky-200">
               <div className="text-sm font-medium text-sky-900">{form.tradeAddress}</div>
-              {/* 위도/경도 텍스트 숨김 처리 */}
               <div id="map" className="w-full h-64 mt-2 rounded border" />
             </div>
           )}
@@ -337,7 +364,7 @@ export default function NewSalePostPage() {
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-sky-400 transition-colors">
             <input
               type="file"
-              id="sale-images"
+              id="edit-images"
               multiple
               accept="image/*"
               onChange={handleImageUpload}
@@ -345,10 +372,10 @@ export default function NewSalePostPage() {
               className="hidden"
             />
             <label
-              htmlFor="sale-images"
+              htmlFor="edit-images"
               className="flex flex-col items-center justify-center cursor-pointer py-4"
             >
-              <Upload className="h-10 w-10 text-gray-400 mb-2" />
+              <span className="h-10 w-10 text-gray-400 mb-2">📷</span>
               <p className="text-sm text-gray-600 mb-1">
                 {uploadingImage ? "업로드 중..." : "클릭하여 이미지 업로드"}
               </p>
@@ -359,7 +386,7 @@ export default function NewSalePostPage() {
           {previewImages.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
               {previewImages.map((img, index) => (
-                <div key={img.id ?? index} className="relative aspect-square">
+                <div key={img.url ?? index} className="relative aspect-square">
                   <Image
                     src={img.url}
                     alt="업로드된 이미지"
@@ -373,10 +400,10 @@ export default function NewSalePostPage() {
                   )}
                   <button
                     type="button"
-                    onClick={() => removeImage(img.id)}
+                    onClick={() => removeImage(img.url)}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                   >
-                    <X className="h-4 w-4" />
+                    삭제
                   </button>
                 </div>
               ))}
@@ -389,21 +416,40 @@ export default function NewSalePostPage() {
             <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>
           )}
         </div>
-
+                {/* 상태 변경 드롭다운 */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">판매 상태</label>
+                  <select
+                    className="w-full border rounded px-3 py-2"
+                    value={form.status}
+                    onChange={e => setForm({ ...form, status: e.target.value })}
+                  >
+                    <option value="SALE">판매중</option>
+                    <option value="SOLD">거래완료</option>
+                  </select>
+                </div>
         {/* 메시지 */}
-        {errors && <div className="text-sm text-red-600">{errors}</div>}
+        {error && <div className="text-sm text-red-600">{error}</div>}
         {success && <div className="text-sm text-green-600">{success}</div>}
 
         {/* 버튼 */}
-        <div className="flex gap-3 pt-4">
-          <button type="button" className="flex-1 bg-gray-100 text-gray-700 py-4 text-lg font-bold rounded-lg">
-            임시 저장
+        <div className="flex justify-between mt-6">
+          <button
+            type="button"
+            onClick={() => deleteSalePost(salePostId!)}
+            className="bg-red-100 text-red-600 px-4 py-2 rounded hover:bg-red-200"
+          >
+            삭제하기
           </button>
-          <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 text-white py-4 text-lg font-bold rounded-lg">
-            {loading ? "작성 중..." : "작성 완료"}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-sky-100 text-sky-700 px-4 py-2 rounded disabled:opacity-50"
+          >
+            {loading ? "수정 중..." : "수정 완료"}
           </button>
         </div>
       </form>
     </div>
-  );
+  )
 }

@@ -71,12 +71,15 @@ function SalePostsPageInner() {
   async function loadPosts() {
     try {
       setLoading(true);
-      // 사용자 거래 희망 위치 정보 가져오기
-      const userRes = await getMyInfo();
+      // 사용자 거래 희망 위치 정보 가져오기 (로그인한 경우만)
       let userLat = null, userLng = null;
-      if (userRes.success && userRes.data) {
-        userLat = userRes.data.tradeLatitude;
-        userLng = userRes.data.tradeLongitude;
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        const userRes = await getMyInfo();
+        if (userRes.success && userRes.data) {
+          userLat = userRes.data.tradeLatitude;
+          userLng = userRes.data.tradeLongitude;
+        }
       }
       // getSalePosts API에 위치 파라미터 전달
       const salePostsRes = await apiGet<SalePostListResponse>(

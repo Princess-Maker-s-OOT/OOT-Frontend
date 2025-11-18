@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Upload, X, Search, MapPin } from "lucide-react"
+import dynamic from "next/dynamic"
+const KakaoMapProfile = dynamic(() => import("@/components/KakaoMapProfile"), { ssr: false })
 import Image from "next/image"
 
 declare global {
@@ -133,7 +135,7 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
         size: file.size
       });
       if (saveResult.success && saveResult.data) {
-        const imageData = saveResult.data;
+        const imageData = saveResult.data.data;
         setImageData({
           imageId: imageData.id,
           imageUrl: imageData.url,
@@ -200,9 +202,9 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
             const { address_name, y, x } = result[0]
             setFormData({
               ...formData,
-              address: address_name,
-              latitude: parseFloat(y),
-              longitude: parseFloat(x),
+              tradeAddress: address_name,
+              tradeLatitude: parseFloat(y),
+              tradeLongitude: parseFloat(x),
             })
             toast({
               title: "주소 검색 성공",
@@ -474,18 +476,14 @@ export default function EditMyInfoForm({ profile, onSuccess, onCancel }: EditMyI
             </div>
           </div>
 
-          {/* 선택된 주소 표시 */}
-          {formData.tradeAddress && (
+          {/* 선택된 주소 지도 표시 */}
+          {formData.tradeAddress && formData.tradeLatitude && formData.tradeLongitude && (
             <div className="p-4 bg-sky-50 rounded-lg border border-sky-200">
-              <div className="flex items-start gap-2">
-                <MapPin className="h-5 w-5 text-sky-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-sky-900">{formData.address}</p>
-                  <p className="text-xs text-sky-700 mt-1">
-                    위도: {formData.latitude?.toFixed(6)}, 경도: {formData.longitude?.toFixed(6)}
-                  </p>
-                </div>
+              <div className="mb-2 text-sm font-medium text-sky-900 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-sky-600 flex-shrink-0" />
+                {formData.tradeAddress}
               </div>
+              <KakaoMapProfile lat={formData.tradeLatitude} lng={formData.tradeLongitude} />
             </div>
           )}
 

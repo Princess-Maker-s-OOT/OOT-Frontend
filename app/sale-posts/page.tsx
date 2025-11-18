@@ -59,16 +59,16 @@ function SalePostsPageInner() {
   const [posts, setPosts] = useState<SalePostSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTitle, setSearchTitle] = useState("");
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     loadPosts();
-  }, [searchTitle]);
+  }, []);
 
   async function loadPosts() {
     try {
       setLoading(true);
+      setError(null);
       let userLat = null, userLng = null;
       const accessToken = localStorage.getItem("accessToken");
       if (accessToken) {
@@ -78,17 +78,22 @@ function SalePostsPageInner() {
           userLng = userRes.data.tradeLongitude;
         }
       }
-      // 제목 검색만 반영
-      const salePostsRes = await apiGet<SalePostListResponse>(
-        `/api/v1/sale-posts/public?page=0&size=20${searchTitle ? `&title=${encodeURIComponent(searchTitle)}` : ""}${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}` : ""}`,
-        { requiresAuth: false }
-      );
+      const url = `/api/v1/sale-posts/public?page=0&size=20${userLat !== null && userLng !== null ? `&lat=${userLat}&lng=${userLng}` : ""}`;
+      console.log("판매글 목록 요청 URL:", url);
+
+      const salePostsRes = await apiGet<SalePostListResponse>(url, { requiresAuth: false });
+
+      console.log("판매글 목록 응답:", salePostsRes);
+
       if (salePostsRes.success && salePostsRes.data) {
+        console.log("판매글 개수:", salePostsRes.data.content.length);
         setPosts(salePostsRes.data.content);
       } else {
+        console.error("판매글 불러오기 실패:", salePostsRes.message);
         setError(salePostsRes.message || "판매글을 불러올 수 없습니다.");
       }
     } catch (err: any) {
+      console.error("판매글 로드 에러:", err);
       setError(err?.message || "네트워크 오류");
     } finally {
       setLoading(false);
@@ -100,20 +105,12 @@ function SalePostsPageInner() {
       <div>
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-semibold">판매글 목록</h1>
-        <div className="flex gap-2 items-center">
-          <input
-            type="text"
-            value={searchTitle}
-            onChange={e => setSearchTitle(e.target.value)}
-            placeholder="제목으로 검색..."
-            className="border px-3 py-2 rounded text-sm w-48"
-          />
+        <div className="flex gap-2">
           <button
-            onClick={() => setSearchTitle("")}
+            onClick={loadPosts}
             className="bg-gray-100 text-gray-700 text-sm px-4 py-2 rounded hover:bg-gray-200 transition"
-            disabled={!searchTitle}
           >
-            검색 초기화
+            새로고침
           </button>
           {isAuthenticated && (
             <a

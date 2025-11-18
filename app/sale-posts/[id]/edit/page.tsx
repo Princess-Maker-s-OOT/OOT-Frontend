@@ -30,10 +30,10 @@ export default function EditSalePostPage() {
     tradeAddress: "",
     tradeLatitude: "37.5665",
     tradeLongitude: "126.9780",
-    imageUrls: [],
+    imageIds: [],
     status: "AVAILABLE" // 상태 필드 추가
   });
-  const [previewImages, setPreviewImages] = useState<{ url: string }[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<{ id: number; url: string }[]>([]);
   const [addressSearch, setAddressSearch] = useState("");
   const [searchingAddress, setSearchingAddress] = useState(false);
   const [categories, setCategories] = useState<CategoryNode[]>([]);
@@ -82,10 +82,13 @@ export default function EditSalePostPage() {
             tradeAddress: d.tradeAddress,
             tradeLatitude: String(d.tradeLatitude ?? "37.5665"),
             tradeLongitude: String(d.tradeLongitude ?? "126.9780"),
-            imageUrls: d.imageUrls ?? [],
+            imageIds: (d.images ?? []).map((img: any) => img.imageId),
             status: d.status ?? "AVAILABLE"
           });
-          setPreviewImages((d.imageUrls ?? []).map((url: string) => ({ url })));
+          setUploadedImages((d.images ?? []).map((img: any) => ({
+            id: img.imageId,
+            url: img.imageUrl
+          })));
         } else {
           setError("판매글 데이터를 불러올 수 없습니다.");
         }
@@ -175,42 +178,55 @@ export default function EditSalePostPage() {
     if (!files || files.length === 0) return;
     setUploadingImage(true);
     setError(null);
-    const newImageUrls: string[] = [];
-    const newPreviews: { url: string }[] = [];
+    const newImages: { id: number; url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
-        const presigned = await createPresignedUrl({
+        // Presigned URL 생성
+        const presignedResult = await createPresignedUrl({
           fileName: file.name,
           type: "salepost"
         });
-        if (!presigned.success || !presigned.data) {
-          throw new Error(presigned.message || "이미지 업로드 URL 생성 실패");
+
+        if (!presignedResult.success || !presignedResult.data) {
+          throw new Error("이미지 업로드 URL 생성 실패");
         }
-        const { presignedUrl, fileUrl, s3Key } = presigned.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
-        const uploadRes = await fetch(presignedUrl, {
+
+        const data = presignedResult.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
+
+        // S3에 업로드
+        const uploadResponse = await fetch(data.presignedUrl, {
           method: "PUT",
-          headers: { "Content-Type": file.type },
           body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
         });
-        if (!uploadRes.ok) {
-          throw new Error("이미지 업로드 실패");
+
+        if (!uploadResponse.ok) {
+          throw new Error("S3 업로드 실패");
         }
+
+        // 메타데이터 저장
         const saveResult = await saveImageMetadata({
           fileName: file.name,
-          url: fileUrl,
-          s3Key: s3Key,
+          url: data.fileUrl,
+          s3Key: data.s3Key,
           contentType: file.type,
           type: "SALEPOST",
-          size: file.size
+          size: file.size,
         });
+
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
-          newImageUrls.push(imageData.url);
-          newPreviews.push({ url: imageData.url });
+          newImages.push({
+            id: imageData.id,
+            url: imageData.url,
+          });
         }
       }
-      setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));
-      setPreviewImages((prev) => [...prev, ...newPreviews]);
+
+      setForm((s) => ({ ...s, imageIds: [...s.imageIds, ...newImages.map(img => img.id)] }));
+      setUploadedImages((prev) => [...prev, ...newImages]);
     } catch (err: any) {
       setError(err?.message || "이미지 업로드 중 오류 발생");
     } finally {
@@ -219,12 +235,12 @@ export default function EditSalePostPage() {
     }
   }
 
-  function removeImage(imageUrl: string) {
+  function removeImage(imageId: number) {
     setForm((s) => ({
       ...s,
-      imageUrls: s.imageUrls.filter((url) => url !== imageUrl),
+      imageIds: s.imageIds.filter((id) => id !== imageId),
     }));
-    setPreviewImages((prev) => prev.filter((img) => img.url !== imageUrl));
+    setUploadedImages((prev) => prev.filter((img) => img.id !== imageId));
   }
 
   // 제출 핸들러
@@ -233,7 +249,7 @@ export default function EditSalePostPage() {
     setError(null);
     setSuccess(null);
 
-    if (form.imageUrls.length === 0) {
+    if (form.imageIds.length === 0) {
       setError("이미지를 최소 1개 이상 등록해주세요.");
       return;
     }
@@ -381,10 +397,10 @@ export default function EditSalePostPage() {
             </label>
           </div>
           {/* 이미지 미리보기 */}
-          {previewImages.length > 0 && (
+          {uploadedImages.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
-              {previewImages.map((img, index) => (
-                <div key={img.url ?? index} className="relative aspect-square">
+              {uploadedImages.map((img, index) => (
+                <div key={img.id ?? index} className="relative aspect-square">
                   <Image
                     src={img.url}
                     alt="업로드된 이미지"
@@ -398,7 +414,7 @@ export default function EditSalePostPage() {
                   )}
                   <button
                     type="button"
-                    onClick={() => removeImage(img.url)}
+                    onClick={() => removeImage(img.id)}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                   >
                     삭제
@@ -407,10 +423,10 @@ export default function EditSalePostPage() {
               ))}
             </div>
           )}
-          {previewImages.length > 0 && (
+          {uploadedImages.length > 0 && (
             <p className="text-xs text-gray-500 mt-2">* 첫 번째 이미지가 썸네일로 사용됩니다.</p>
           )}
-          {previewImages.length === 0 && (
+          {uploadedImages.length === 0 && (
             <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>
           )}
         </div>

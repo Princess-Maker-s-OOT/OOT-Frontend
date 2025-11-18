@@ -22,7 +22,7 @@ export default function NewSalePostPage() {
     tradeLongitude: "126.9780",
     imageUrls: [],
   });
-  const [previewImages, setPreviewImages] = useState<{ id: number; url: string }[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<{ id: number; url: string }[]>([]);
   const [addressSearch, setAddressSearch] = useState("");
   const [searchingAddress, setSearchingAddress] = useState(false);
 
@@ -119,7 +119,7 @@ export default function NewSalePostPage() {
     setErrors(null);
     setSuccess(null);
 
-    if (form.imageUrls.length === 0) {
+    if (uploadedImages.length === 0) {
       setErrors("이미지를 최소 1개 이상 등록해주세요.");
       return;
     }
@@ -129,27 +129,33 @@ export default function NewSalePostPage() {
       return;
     }
 
-    const parsed = CreateSalePostSchema.safeParse({
+    const salePostData = {
       ...form,
-      price: form.price,
-    });
-
+      imageIds: uploadedImages.filter(img => img && img.id).map(img => img.id),
+    };
+    const parsed = CreateSalePostSchema.safeParse(salePostData);
     if (!parsed.success) {
       setErrors(parsed.error.errors.map((i) => i.message).join(", "));
       return;
     }
-
-    console.log("판매글 작성 요청 데이터:", parsed.data);
-
     setLoading(true);
     try {
       const result = await apiPost("/api/v1/sale-posts", parsed.data);
-      
-      console.log("판매글 작성 응답:", result);
-      
-      if (result.success) {
+      if (result.success && result.data && Array.isArray((result.data as any).images)) {
+        setUploadedImages(
+          ((result.data as any).images as Array<{
+            imageId: number;
+            imageUrl: string;
+            isMain: boolean;
+            displayOrder: number;
+          }>).map(img => ({
+            id: img.imageId,
+            url: img.imageUrl,
+            isMain: img.isMain,
+            displayOrder: img.displayOrder,
+          }))
+        );
         setSuccess("판매글이 등록되었습니다.");
-        // 2초 후 판매글 목록으로 이동
         setTimeout(() => {
           window.location.href = "/sale-posts";
         }, 2000);
@@ -157,7 +163,6 @@ export default function NewSalePostPage() {
         setErrors(result.message || "등록 실패");
       }
     } catch (err: any) {
-      console.error("판매글 작성 에러:", err);
       setErrors(err?.message || "네트워크 오류");
     } finally {
       setLoading(false);
@@ -175,42 +180,54 @@ export default function NewSalePostPage() {
     if (!files || files.length === 0) return;
     setUploadingImage(true);
     setErrors(null);
-    const newImageUrls: string[] = [];
-    const newPreviews: { id: number; url: string }[] = [];
+    const newImages: { id: number; url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
-        const presigned = await createPresignedUrl({
+        // Presigned URL 생성
+        const presignedResult = await createPresignedUrl({
           fileName: file.name,
           type: "salepost"
         });
-        if (!presigned.success || !presigned.data) {
-          throw new Error(presigned.message || "이미지 업로드 URL 생성 실패");
+
+        if (!presignedResult.success || !presignedResult.data) {
+          throw new Error("이미지 업로드 URL 생성 실패");
         }
-        const { presignedUrl, fileUrl, s3Key } = presigned.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
-        const uploadRes = await fetch(presignedUrl, {
+
+        const data = presignedResult.data as unknown as import("@/lib/types/image").CreatePresignedUrlSuccessResponse["data"];
+
+        // S3에 업로드
+        const uploadResponse = await fetch(data.presignedUrl, {
           method: "PUT",
-          headers: { "Content-Type": file.type },
           body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
         });
-        if (!uploadRes.ok) {
-          throw new Error("이미지 업로드 실패");
+
+        if (!uploadResponse.ok) {
+          throw new Error("S3 업로드 실패");
         }
+
+        // 메타데이터 저장
         const saveResult = await saveImageMetadata({
           fileName: file.name,
-          url: fileUrl,
-          s3Key: s3Key,
+          url: data.fileUrl,
+          s3Key: data.s3Key,
           contentType: file.type,
           type: "SALEPOST",
-          size: file.size
+          size: file.size,
         });
+
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
-          newImageUrls.push(imageData.url);
-          newPreviews.push({ id: Date.now(), url: imageData.url });
+          newImages.push({
+            id: imageData.id,
+            url: imageData.url,
+          });
         }
       }
-      setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));
-      setPreviewImages((prev) => [...prev, ...newPreviews]);
+
+      setUploadedImages((prev) => [...prev, ...newImages]);
     } catch (err: any) {
       setErrors(err?.message || "이미지 업로드 중 오류 발생");
     } finally {
@@ -220,11 +237,7 @@ export default function NewSalePostPage() {
   }
 
   function removeImage(imageId: number) {
-    setForm((s) => ({
-      ...s,
-      imageUrls: s.imageUrls.filter((url) => url !== previewImages.find((img) => img.id === imageId)?.url),
-    }));
-    setPreviewImages((prev) => prev.filter((img) => img.id !== imageId));
+    setUploadedImages((prev) => prev.filter((img) => img.id !== imageId));
   }
 
   return (
@@ -278,7 +291,7 @@ export default function NewSalePostPage() {
             value={form.price}
             onChange={(e) => {
               const value = e.target.value.replace(/[^0-9]/g, '')
-              setForm({ ...form, price: value as any })
+              setForm({ ...form, price: value ? parseInt(value) : 0 })
             }}
           />
           <p className="text-xs text-gray-500 mt-1">숫자만 입력 가능합니다.</p>
@@ -356,9 +369,9 @@ export default function NewSalePostPage() {
             </label>
           </div>
           {/* 이미지 미리보기 */}
-          {previewImages.length > 0 && (
+          {uploadedImages.filter(img => img && img.id && img.url).length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
-              {previewImages.map((img, index) => (
+              {uploadedImages.filter(img => img && img.id && img.url).map((img, index) => (
                 <div key={img.id ?? index} className="relative aspect-square">
                   <Image
                     src={img.url}
@@ -373,7 +386,7 @@ export default function NewSalePostPage() {
                   )}
                   <button
                     type="button"
-                    onClick={() => removeImage(img.id)}
+                    onClick={() => img.id && removeImage(img.id)}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                   >
                     <X className="h-4 w-4" />
@@ -382,10 +395,10 @@ export default function NewSalePostPage() {
               ))}
             </div>
           )}
-          {previewImages.length > 0 && (
+          {uploadedImages.length > 0 && (
             <p className="text-xs text-gray-500 mt-2">* 첫 번째 이미지가 썸네일로 사용됩니다.</p>
           )}
-          {previewImages.length === 0 && (
+          {uploadedImages.length === 0 && (
             <p className="text-xs text-red-500 mt-1">이미지를 최소 1개 이상 등록해주세요.</p>
           )}
         </div>

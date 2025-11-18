@@ -116,29 +116,35 @@ export async function apiGet<T>(
 ): Promise<ApiResult<T>> {
   try {
     const response = await apiClient(endpoint, { ...options, method: "GET" })
-    const result = await response.json()
-    
-    if (!response.ok) {
-      console.error(`[apiGet] ${response.status} 에러:`, endpoint)
-      console.error(`[apiGet] 에러 응답:`, result)
+    let result;
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      // JSON 파싱 실패 시 text로 반환
+      const text = await response.text();
       return {
         success: false,
-        message: result.message || `HTTP ${response.status}`,
-        error: result.data || result.message,
-      }
+        message: text || `HTTP ${response.status}`,
+        error: text,
+      };
     }
-    
+    if (!response.ok) {
+      return {
+        success: false,
+        message: result?.message || `HTTP ${response.status}`,
+        error: result?.data || result?.message,
+      };
+    }
     return {
       success: true,
-      message: result.message || "성공",
-      data: result.data,
-    }
+      message: result?.message || "성공",
+      data: result?.data,
+    };
   } catch (error: any) {
-    console.error("[apiGet] 요청 실패:", endpoint, error)
     return {
       success: false,
       message: error?.message || "네트워크 오류",
-    }
+    };
   }
 }
 

@@ -55,11 +55,9 @@ export default function AboutPage() {
               </div>
 
               <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                <strong className="text-sky-600">OOT</strong> 플랫폼은{" "}
-                <strong>의류 기반 중고 거래 플랫폼</strong>이자 사용자의{" "}
-                <strong>디지털 옷장 관리</strong>를 제공하며,{" "}
-                <strong>자주 안 입는 옷에 대해 기부 또는 판매를 추천</strong>하여 
-                옷의 활용도를 높이고, 의류 순환을 통해 환경 보호에 앞장섭니다.
+                <strong className="text-sky-600">OOT</strong> 플랫폼은 의류 기반 중고 거래 플랫폼이자 사용자의 디지털 옷장 관리를 제공하며,<br/>
+                자주 안 입는 옷에 대해 기부 또는 판매를 추천하여 옷의 활용도를 높이고,<br/>
+                의류 순환을 통해 환경 보호에 앞장섭니다.
               </p>
             </div>
 
@@ -131,10 +129,8 @@ export default function AboutPage() {
               지속 가능한 패션을 향한 여정
             </h2>
             <p className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
-              OOT는 단순한 중고 거래 플랫폼을 넘어, 옷의 생명을 연장하고 
-              지속 가능한 소비 문화를 만들어갑니다. 
-              당신의 옷장에서 시작되는 작은 변화가 
-              환경을 지키는 큰 움직임이 됩니다.
+              OOT는 단순한 중고 거래 플랫폼을 넘어, 옷의 생명을 연장하고 지속 가능한 소비 문화를 만들어갑니다.<br/>
+              당신의 옷장에서 시작되는 작은 변화가 환경을 지키는 큰 움직임이 됩니다.
             </p>
             <div className="flex justify-center gap-4 flex-wrap">
               <div className="bg-white/60 backdrop-blur-sm px-6 py-3 rounded-full border border-sky-200">

@@ -19,7 +19,7 @@ export const CreateSalePostSchema = z.object({
   tradeAddress: z.string().min(1),
   tradeLatitude: z.string(),
   tradeLongitude: z.string(),
-  imageUrls: z.array(z.string().url()),
+  imageIds: z.array(z.number().int()),
 });
 
 export type CreateSalePostRequest = z.infer<typeof CreateSalePostSchema>;

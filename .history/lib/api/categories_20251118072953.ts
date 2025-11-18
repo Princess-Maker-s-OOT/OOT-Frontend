@@ -214,30 +214,16 @@ export function buildCategoryTree(flatCategories: CategoryResponse[]): CategoryN
     }
   })
 
-  // 아동 계층 구조 (ID 범위 기반)
-  // 중분류: 92~96, 소분류: 97~105
-  const childMid = sorted.filter(c => c.id >= 92 && c.id <= 96)
-  const childLeaf = sorted.filter(c => c.id >= 97 && c.id <= 105)
-
-  // 중분류별 소분류 ID 범위
-  const childIdRanges: Record<number, [number, number]> = {
-    92: [97, 98],   // 아우터
-    93: [99, 100],  // 상의
-    94: [101, 102], // 하의
-    95: [103],      // 신발
-    96: [104, 105], // 액세서리
-  }
-
+  // 아동 계층 구조 (parentId 기반)
+  const childMid = sorted.filter(c => c.parentId === root3.id) // 중분류: 아우터/상의/하의/신발/액세서리
   childMid.forEach((mid) => {
     const midNode = categoryMap.get(mid.id)!
     root3.children!.push(midNode)
-    const range = childIdRanges[mid.id]
-    if (range) {
-      const [start, end] = range.length === 2 ? range : [range[0], range[0]]
-      childLeaf.filter(c => c.id >= start && c.id <= end).forEach((leaf) => {
-        midNode.children!.push(categoryMap.get(leaf.id)!)
-      })
-    }
+    // 소분류: parentId가 해당 중분류 id인 것
+    const childLeaf = sorted.filter(c => c.parentId === mid.id)
+    childLeaf.forEach((leaf) => {
+      midNode.children!.push(categoryMap.get(leaf.id)!)
+    })
   })
 
   return [root1, root2, root3]

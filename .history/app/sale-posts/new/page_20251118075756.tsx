@@ -15,7 +15,7 @@ export default function NewSalePostPage() {
   const [form, setForm] = useState<CreateSalePostRequest>({
     title: "",
     content: "",
-    price: "",
+    price: 0,
     categoryId: 0,
     tradeAddress: "",
     tradeLatitude: "37.5665",
@@ -131,7 +131,7 @@ export default function NewSalePostPage() {
 
     const parsed = CreateSalePostSchema.safeParse({
       ...form,
-      price: form.price === "" ? undefined : Number(form.price),
+      price: typeof form.price === "string" ? Number(form.price) : form.price,
     });
 
     if (!parsed.success) {
@@ -175,8 +175,8 @@ export default function NewSalePostPage() {
     if (!files || files.length === 0) return;
     setUploadingImage(true);
     setErrors(null);
-    const newImageUrls: string[] = [];
-    const newPreviews: { url: string }[] = [];
+    const newImageIds: number[] = [];
+    const newPreviews: { id: number; url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({
@@ -359,7 +359,7 @@ export default function NewSalePostPage() {
           {previewImages.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
               {previewImages.map((img, index) => (
-                <div key={img.id ?? index} className="relative aspect-square">
+                <div key={img.id} className="relative aspect-square">
                   <Image
                     src={img.url}
                     alt="업로드된 이미지"

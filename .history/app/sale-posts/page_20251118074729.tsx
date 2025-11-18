@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { getCategories, buildCategoryTree, type CategoryNode } from "@/lib/api/categories";
 import CategorySidebar from "@/components/category-sidebar";
 
@@ -165,49 +164,45 @@ function SalePostsPageInner() {
       )}
 
       {!loading && !error && posts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((p) => (
-            <Link key={p.salePostId} href={`/sale-posts/${p.salePostId}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardHeader>
-                  <CardTitle className="text-lg truncate">{p.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {p.thumbnailUrl ? (
-                    <div className="relative w-full h-40 bg-gray-100 rounded-md overflow-hidden">
-                      <img
-                        src={p.thumbnailUrl}
-                        alt={p.title}
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                          e.currentTarget.src = "https://via.placeholder.com/300x200?text=No+Image";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full h-40 bg-gray-100 rounded-md flex items-center justify-center">
-                      <span className="text-sm text-muted-foreground">이미지 없음</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-cyan-600 font-extrabold text-lg">₩{p.price.toLocaleString()}</span>
-                    <span className="text-xs text-gray-500">{p.categoryName}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{p.tradeAddress}</p>
-                </CardContent>
-                <CardFooter className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{p.sellerNickname}</span>
-                  <span className={`px-2 py-1 rounded font-semibold ${
-                    (p.status === "SELLING" || p.status === "AVAILABLE")
-                      ? "bg-green-100 text-green-700" 
-                      : p.status === "RESERVED"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-gray-100 text-gray-700"
-                  }`}>
-                    {(p.status === "SELLING" || p.status === "AVAILABLE") ? "판매중" : p.status === "RESERVED" ? "예약중" : "판매완료"}
-                  </span>
-                </CardFooter>
-              </Card>
+            <Link
+              key={p.salePostId}
+              href={`/sale-posts/${p.salePostId}`}
+              className="block bg-white rounded-2xl shadow-lg border border-sky-100 hover:shadow-xl transition-all p-4 cursor-pointer h-full"
+            >
+              {p.thumbnailUrl ? (
+                <img
+                  src={p.thumbnailUrl}
+                  alt={p.title}
+                  className="h-44 w-full object-cover mb-3 rounded-xl bg-gray-100"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://via.placeholder.com/300x200?text=No+Image";
+                  }}
+                />
+              ) : (
+                <div className="h-44 w-full mb-3 rounded-xl bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">이미지 없음</span>
+                </div>
+              )}
+              <h3 className="text-base font-bold mb-1 truncate text-sky-800">{p.title}</h3>
+              <div className="flex items-center justify-between">
+                <span className="text-cyan-600 font-extrabold text-lg">₩{p.price.toLocaleString()}</span>
+                <span className="text-xs text-gray-500">{p.categoryName}</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">{p.tradeAddress}</p>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-500">{p.sellerNickname}</span>
+                <span className={`text-xs px-2 py-1 rounded-lg font-semibold ${
+                  (p.status === "SELLING" || p.status === "AVAILABLE")
+                    ? "bg-green-100 text-green-700" 
+                    : p.status === "RESERVED"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}>
+                  {(p.status === "SELLING" || p.status === "AVAILABLE") ? "판매중" : p.status === "RESERVED" ? "예약중" : "판매완료"}
+                </span>
+              </div>
             </Link>
           ))}
         </div>

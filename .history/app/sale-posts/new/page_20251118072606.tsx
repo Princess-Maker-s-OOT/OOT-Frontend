@@ -11,74 +11,55 @@ import { Loader2 } from "lucide-react";
 import { Upload, X } from "lucide-react";
 
 export default function NewSalePostPage() {
-  // form state 선언을 최상단에 위치
+    // 카카오맵 주소 검색 상태
+    const [addressSearch, setAddressSearch] = useState("");
+    const [searchingAddress, setSearchingAddress] = useState(false);
+
+    // 카카오맵 스크립트 로드
+    useEffect(() => {
+      const script = document.createElement("script");
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
+      script.async = true;
+      document.head.appendChild(script);
+      return () => {
+        document.head.removeChild(script);
+      };
+    }, []);
+
+    async function searchAddress() {
+      if (!addressSearch.trim()) return;
+      setSearchingAddress(true);
+      if (!window.kakao || !window.kakao.maps) {
+        setSearchingAddress(false);
+        return;
+      }
+      window.kakao.maps.load(() => {
+        const geocoder = new window.kakao.maps.services.Geocoder();
+        geocoder.addressSearch(addressSearch, (result, status) => {
+          if (status === window.kakao.maps.services.Status.OK && result[0]) {
+            const { address_name, y, x } = result[0];
+            setForm((prev) => ({
+              ...prev,
+              tradeAddress: address_name,
+              tradeLatitude: y,
+              tradeLongitude: x,
+            }));
+          }
+          setSearchingAddress(false);
+        });
+      });
+    }
   const [form, setForm] = useState<CreateSalePostRequest>({
     title: "",
     content: "",
-    price: "",
+    price: "" as any,
     categoryId: 0,
     tradeAddress: "",
     tradeLatitude: "37.5665",
     tradeLongitude: "126.9780",
-    imageUrls: [],
+    imageIds: [],
   });
   const [previewImages, setPreviewImages] = useState<{ id: number; url: string }[]>([]);
-  const [addressSearch, setAddressSearch] = useState("");
-  const [searchingAddress, setSearchingAddress] = useState(false);
-
-  // 지도 렌더링 (주소 좌표 변경 시)
-  useEffect(() => {
-    if (form.tradeLatitude && form.tradeLongitude && window.kakao && window.kakao.maps) {
-      window.kakao.maps.load(() => {
-        const container = document.getElementById("map");
-        if (!container) return;
-        const options = {
-          center: new window.kakao.maps.LatLng(form.tradeLatitude, form.tradeLongitude),
-          level: 3,
-        };
-        const map = new window.kakao.maps.Map(container, options);
-        const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(form.tradeLatitude, form.tradeLongitude),
-        });
-        marker.setMap(map);
-      });
-    }
-  }, [form.tradeLatitude, form.tradeLongitude]);
-
-  // 카카오맵 스크립트 로드
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
-    script.async = true;
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
-  async function searchAddress() {
-    if (!addressSearch.trim()) return;
-    setSearchingAddress(true);
-    if (!window.kakao || !window.kakao.maps) {
-      setSearchingAddress(false);
-      return;
-    }
-    window.kakao.maps.load(() => {
-      const geocoder = new window.kakao.maps.services.Geocoder();
-      geocoder.addressSearch(addressSearch, (result, status) => {
-        if (status === window.kakao.maps.services.Status.OK && result[0]) {
-          const { address_name, y, x } = result[0];
-          setForm((prev) => ({
-            ...prev,
-            tradeAddress: address_name,
-            tradeLatitude: y,
-            tradeLongitude: x,
-          }));
-        }
-        setSearchingAddress(false);
-      });
-    });
-  }
   const [categories, setCategories] = useState<CategoryNode[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [imageInput, setImageInput] = useState("");
@@ -119,7 +100,7 @@ export default function NewSalePostPage() {
     setErrors(null);
     setSuccess(null);
 
-    if (form.imageUrls.length === 0) {
+    if (form.imageIds.length === 0) {
       setErrors("이미지를 최소 1개 이상 등록해주세요.");
       return;
     }
@@ -131,7 +112,8 @@ export default function NewSalePostPage() {
 
     const parsed = CreateSalePostSchema.safeParse({
       ...form,
-      price: form.price === "" ? undefined : Number(form.price),
+      price: String(form.price) === "" ? 0 : Number(form.price),
+      images: form.imageIds,
     });
 
     if (!parsed.success) {
@@ -175,8 +157,8 @@ export default function NewSalePostPage() {
     if (!files || files.length === 0) return;
     setUploadingImage(true);
     setErrors(null);
-    const newImageUrls: string[] = [];
-    const newPreviews: { url: string }[] = [];
+    const newImageIds: number[] = [];
+    const newPreviews: { id: number; url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({
@@ -205,11 +187,11 @@ export default function NewSalePostPage() {
         });
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
-          newImageUrls.push(imageData.url);
-          newPreviews.push({ url: imageData.url });
+          newImageIds.push(imageData.id);
+          newPreviews.push({ id: imageData.id, url: imageData.url });
         }
       }
-      setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));
+      setForm((s) => ({ ...s, imageIds: [...s.imageIds, ...newImageIds] }));
       setPreviewImages((prev) => [...prev, ...newPreviews]);
     } catch (err: any) {
       setErrors(err?.message || "이미지 업로드 중 오류 발생");
@@ -222,7 +204,7 @@ export default function NewSalePostPage() {
   function removeImage(imageId: number) {
     setForm((s) => ({
       ...s,
-      imageUrls: s.imageUrls.filter((url) => url !== previewImages.find((img) => img.id === imageId)?.url),
+      imageIds: s.imageIds.filter((id) => id !== imageId),
     }));
     setPreviewImages((prev) => prev.filter((img) => img.id !== imageId));
   }
@@ -325,8 +307,9 @@ export default function NewSalePostPage() {
           {form.tradeAddress && (
             <div className="p-2 mt-2 bg-sky-50 rounded border border-sky-200">
               <div className="text-sm font-medium text-sky-900">{form.tradeAddress}</div>
-              {/* 위도/경도 텍스트 숨김 처리 */}
-              <div id="map" className="w-full h-64 mt-2 rounded border" />
+              <div className="text-xs text-sky-700 mt-1">
+                위도: {form.tradeLatitude}, 경도: {form.tradeLongitude}
+              </div>
             </div>
           )}
         </div>
@@ -359,7 +342,7 @@ export default function NewSalePostPage() {
           {previewImages.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
               {previewImages.map((img, index) => (
-                <div key={img.id ?? index} className="relative aspect-square">
+                <div key={img.id} className="relative aspect-square">
                   <Image
                     src={img.url}
                     alt="업로드된 이미지"
@@ -396,10 +379,10 @@ export default function NewSalePostPage() {
 
         {/* 버튼 */}
         <div className="flex gap-3 pt-4">
-          <button type="button" className="flex-1 bg-gray-100 text-gray-700 py-4 text-lg font-bold rounded-lg">
+          <button type="button" className="flex-1 bg-gray-100 text-gray-700">
             임시 저장
           </button>
-          <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 text-white py-4 text-lg font-bold rounded-lg">
+          <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-sky-400 to-cyan-400 hover:from-sky-500 hover:to-cyan-500 text-white">
             {loading ? "작성 중..." : "작성 완료"}
           </button>
         </div>

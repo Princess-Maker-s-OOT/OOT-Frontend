@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { getCategories, buildCategoryTree, type CategoryNode } from "@/lib/api/categories";
 import CategorySidebar from "@/components/category-sidebar";
 

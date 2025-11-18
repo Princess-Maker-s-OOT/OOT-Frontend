@@ -15,12 +15,12 @@ export default function NewSalePostPage() {
   const [form, setForm] = useState<CreateSalePostRequest>({
     title: "",
     content: "",
-    price: "",
+    price: "" as any,
     categoryId: 0,
     tradeAddress: "",
     tradeLatitude: "37.5665",
     tradeLongitude: "126.9780",
-    imageUrls: [],
+    imageIds: [],
   });
   const [previewImages, setPreviewImages] = useState<{ id: number; url: string }[]>([]);
   const [addressSearch, setAddressSearch] = useState("");
@@ -119,7 +119,7 @@ export default function NewSalePostPage() {
     setErrors(null);
     setSuccess(null);
 
-    if (form.imageUrls.length === 0) {
+    if (form.imageIds.length === 0) {
       setErrors("이미지를 최소 1개 이상 등록해주세요.");
       return;
     }
@@ -131,7 +131,8 @@ export default function NewSalePostPage() {
 
     const parsed = CreateSalePostSchema.safeParse({
       ...form,
-      price: form.price === "" ? undefined : Number(form.price),
+      price: String(form.price) === "" ? 0 : Number(form.price),
+      images: form.imageIds,
     });
 
     if (!parsed.success) {
@@ -175,8 +176,8 @@ export default function NewSalePostPage() {
     if (!files || files.length === 0) return;
     setUploadingImage(true);
     setErrors(null);
-    const newImageUrls: string[] = [];
-    const newPreviews: { url: string }[] = [];
+    const newImageIds: number[] = [];
+    const newPreviews: { id: number; url: string }[] = [];
     try {
       for (const file of Array.from(files)) {
         const presigned = await createPresignedUrl({
@@ -205,11 +206,11 @@ export default function NewSalePostPage() {
         });
         if (saveResult.success && saveResult.data) {
           const imageData = saveResult.data as unknown as import("@/lib/types/image").SaveImageMetadataSuccessResponse["data"];
-          newImageUrls.push(imageData.url);
-          newPreviews.push({ url: imageData.url });
+          newImageIds.push(imageData.id);
+          newPreviews.push({ id: imageData.id, url: imageData.url });
         }
       }
-      setForm((s) => ({ ...s, imageUrls: [...s.imageUrls, ...newImageUrls] }));
+      setForm((s) => ({ ...s, imageIds: [...s.imageIds, ...newImageIds] }));
       setPreviewImages((prev) => [...prev, ...newPreviews]);
     } catch (err: any) {
       setErrors(err?.message || "이미지 업로드 중 오류 발생");
@@ -222,7 +223,7 @@ export default function NewSalePostPage() {
   function removeImage(imageId: number) {
     setForm((s) => ({
       ...s,
-      imageUrls: s.imageUrls.filter((url) => url !== previewImages.find((img) => img.id === imageId)?.url),
+      imageIds: s.imageIds.filter((id) => id !== imageId),
     }));
     setPreviewImages((prev) => prev.filter((img) => img.id !== imageId));
   }
@@ -359,7 +360,7 @@ export default function NewSalePostPage() {
           {previewImages.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">
               {previewImages.map((img, index) => (
-                <div key={img.id ?? index} className="relative aspect-square">
+                <div key={img.id} className="relative aspect-square">
                   <Image
                     src={img.url}
                     alt="업로드된 이미지"

@@ -11,6 +11,13 @@ import PurchaseButton from '@/components/sale-post/PurchaseButton';
 import ChatButton from '@/components/sale-post/ChatButton';
 import { apiGet, apiDelete } from "@/lib/api/client";
 
+type SalePostImage = {
+  imageId: number;
+  imageUrl: string;
+  displayOrder: number;
+  isMain: boolean;
+};
+
 type SalePostDetail = {
   salePostId: number;
   title: string;
@@ -22,8 +29,9 @@ type SalePostDetail = {
   tradeLongitude: number;
   sellerId: number;
   sellerNickname: string;
+  sellerImageUrl?: string;
   categoryName: string;
-  imageUrls: string[];
+  images: SalePostImage[];
   createdAt: string;
   updatedAt: string;
 };
@@ -62,6 +70,11 @@ export default function SalePostDetailPage() {
         `/api/v1/sale-posts/${id}`,
         { requiresAuth: false }
       );
+
+      console.log("=== 판매글 상세 조회 응답 ===");
+      console.log("결과:", result);
+      console.log("전체 data:", JSON.stringify(result.data, null, 2));
+      console.log("이미지 URLs:", result.data?.imageUrls);
 
       if (result.success && result.data) {
         setPost(result.data);
@@ -126,17 +139,21 @@ export default function SalePostDetailPage() {
       {/* 상품 정보 영역 */}
       <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
         <div className="flex flex-col items-center justify-center border rounded p-4 bg-gray-50">
-          {post.imageUrls && post.imageUrls.length > 0 ? (
+          {post.images && post.images.length > 0 ? (
             <img
-              src={post.imageUrls[0]}
+              src={post.images[0].imageUrl}
               alt="상품 이미지"
               className="w-full h-80 object-cover rounded"
               onError={(e) => {
+                console.error("이미지 로드 실패:", post.images[0].imageUrl);
                 e.currentTarget.style.display = 'none';
                 const parent = e.currentTarget.parentElement;
                 if (parent) {
                   parent.innerHTML = '<div class="h-80 w-full flex items-center justify-center text-gray-400 bg-gray-200 rounded">이미지를 불러올 수 없습니다</div>';
                 }
+              }}
+              onLoad={() => {
+                console.log("이미지 로드 성공:", post.images[0].imageUrl);
               }}
             />
           ) : (
